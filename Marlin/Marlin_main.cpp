@@ -8868,16 +8868,23 @@ void ok_to_send() {
           ratio_y = y / ABL_BG_SPACING(Y_AXIS);
 
     // Whole units for the grid line indices. Constrained within bounds.
-    const int gridx = constrain(floor(ratio_x), 0, ABL_BG_POINTS_X - 1),
-              gridy = constrain(floor(ratio_y), 0, ABL_BG_POINTS_Y - 1),
+    // TCM: Limit gridx/y to ABL_BG_POINTS_X - 2 as only subtracting 1 would result in
+    //      gridx/y and nextx/y being equal if the point was within or beyond the
+    //      high-order grid space, resulting in an improperly computed offset.
+    const int gridx = constrain(floor(ratio_x), 0, ABL_BG_POINTS_X - 2),
+              gridy = constrain(floor(ratio_y), 0, ABL_BG_POINTS_Y - 2),
               nextx = min(gridx + 1, ABL_BG_POINTS_X - 1),
               nexty = min(gridy + 1, ABL_BG_POINTS_Y - 1);
 
-    // Subtract whole to get the ratio within the grid box
+    // Subtract whole to get the ratio relative to the grid box.
+    // TCM: Values less than 0 or greater than 1 (i.e. outside of the probed area) will
+    //      result in an interpolation based on the closest grid box.
     ratio_x -= gridx; ratio_y -= gridy;
 
-    // Never less than 0.0. (Over 1.0 is fine due to previous contraints.)
-    NOLESS(ratio_x, 0); NOLESS(ratio_y, 0);
+    // Never less than 0.0. (Over 1.0 is fine due to previous constraints.)
+    // TCM: Allow the ratios to be less than 0 in order to interpolate for points less
+    //      than the minimum limits of the grid.
+    //NOLESS(ratio_x, 0); NOLESS(ratio_y, 0);
 
     // Z at the box corners
     const float z1 = ABL_BG_GRID(gridx, gridy),  // left-front
