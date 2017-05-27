@@ -603,7 +603,6 @@ FORCE_INLINE void _draw_axis_label(const AxisEnum axis, const char* const pstr, 
 
 #endif // LCD_PROGRESS_BAR
 
-
 /**
 Possible status screens:
 16x2   |000/000 B000/000|
@@ -807,7 +806,15 @@ static void lcd_implementation_status_screen() {
 
   #endif // FILAMENT_LCD_DISPLAY && SDSUPPORT
 
-  lcd_print_utf(lcd_status_message);
+  #if ENABLED(STATUS_MESSAGE_SCROLLING)
+    lcd_print_utf(lcd_status_message + status_scroll_pos);
+    const uint8_t slen = lcd_strlen(lcd_status_message);
+    if (slen > LCD_WIDTH)
+      if (++status_scroll_pos > slen - LCD_WIDTH) status_scroll_pos = 0;
+      //status_scroll_pos = status_scroll_pos ? 0 : slen - LCD_WIDTH; // Toggle left-justified, right-justified
+  #else
+    lcd_print_utf(lcd_status_message);
+  #endif
 }
 
 #if ENABLED(ULTIPANEL)
