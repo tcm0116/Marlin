@@ -234,19 +234,25 @@ char lcd_print_and_count(const char c) {
   else return charset_mapper(c);
 }
 
-void lcd_print(const char* const str, const int maxLength = LCD_WIDTH) {
+void lcd_print(const char* const str) {
+  for (uint8_t i = 0; char c = str[i]; ++i) lcd_print(c);
+}
+
+void lcd_print_utf(const char* const str, const uint8_t maxLength = LCD_WIDTH) {
   char c;
-  for (uint8_t i = 0, len = 0; len < maxLength && (c = str[i]); ++i) {
-    if (charset_mapper(c)) ++len;
-  }
+  for (uint8_t i = 0, n = maxLength; n && (c = str[i]); ++i)
+    if (charset_mapper(c)) --n;
 }
 
 /* Arduino < 1.0.0 is missing a function to print PROGMEM strings, so we need to implement our own */
-void lcd_printPGM(const char* str, const int maxLength = LCD_WIDTH) {
+void lcd_printPGM(const char* str) {
+  for (; char c = pgm_read_byte(str); ++str) lcd_print(c);
+}
+
+void lcd_printPGM_utf(const char* str, const uint8_t maxLength = LCD_WIDTH) {
   char c;
-  for (uint8_t len = 0; len < maxLength && (c = pgm_read_byte(str)); ++str) {
-    if (charset_mapper(c)) ++len;
-  }
+  for (uint8_t i = 0, n = maxLength; n && (c = str[i]); ++i)
+    if (charset_mapper(c)) --n;
 }
 
 // Initialize or re-initialize the LCD
@@ -326,7 +332,7 @@ static void lcd_implementation_init() {
 void lcd_kill_screen() {
   lcd_setFont(FONT_MENU);
   u8g.setPrintPos(0, u8g.getHeight()/4*1);
-  lcd_print(lcd_status_message);
+  lcd_print_utf(lcd_status_message);
   u8g.setPrintPos(0, u8g.getHeight()/4*2);
   lcd_printPGM(PSTR(MSG_HALTED));
   u8g.setPrintPos(0, u8g.getHeight()/4*3);
@@ -640,7 +646,7 @@ static void lcd_implementation_status_screen() {
 
     #if ENABLED(FILAMENT_LCD_DISPLAY) && ENABLED(SDSUPPORT)
       if (PENDING(millis(), previous_lcd_status_ms + 5000UL)) {  //Display both Status message line and Filament display on the last line
-        lcd_print(lcd_status_message);
+        lcd_print_utf(lcd_status_message);
       }
       else {
         lcd_printPGM(PSTR(LCD_STR_FILAM_DIA));
@@ -652,7 +658,7 @@ static void lcd_implementation_status_screen() {
         u8g.print('%');
       }
     #else
-      lcd_print(lcd_status_message);
+      lcd_print_utf(lcd_status_message);
     #endif
   }
 }
