@@ -380,22 +380,27 @@ static void lcd_implementation_init(
 
 void lcd_implementation_clear() { lcd.clear(); }
 
-/* Arduino < 1.0.0 is missing a function to print PROGMEM strings, so we need to implement our own */
-void lcd_printPGM(const char* str, const int maxLength = LCD_WIDTH) {
-  char c;
-  for (uint8_t len = 0; len < maxLength && (c = pgm_read_byte(str)); ++str) {
-    if (charset_mapper(c)) ++len;
-  }
-}
-
-void lcd_print(const char* const str, const int maxLength = LCD_WIDTH) {
-  char c;
-  for (uint8_t i = 0, len = 0; len < maxLength && (c = str[i]); ++i) {
-    if (charset_mapper(c)) ++len;
-  }
-}
-
 void lcd_print(const char c) { charset_mapper(c); }
+
+void lcd_print(const char * const str) {
+  for (uint8_t i = 0; char c = str[i]; ++i) lcd.print(c);
+}
+
+void lcd_print_utf(const char * const str, const uint8_t maxLength=LCD_WIDTH) {
+  char c;
+  for (uint8_t i = 0, n = maxLength; n && (c = str[i]); ++i)
+    if (charset_mapper(c)) --n;
+}
+
+void lcd_printPGM(const char* str) {
+  for (; char c = pgm_read_byte(str); ++str) lcd.print(c);
+}
+
+void lcd_printPGM_utf(const char* str, const uint8_t maxLength=LCD_WIDTH) {
+  char c;
+  for (uint8_t i = 0, n = maxLength; n && (c = str[i]); ++i)
+    if (charset_mapper(c)) --n;
+}
 
 #if ENABLED(SHOW_BOOTSCREEN)
 
@@ -551,7 +556,7 @@ void lcd_print(const char c) { charset_mapper(c); }
 
 void lcd_kill_screen() {
   lcd.setCursor(0, 0);
-  lcd_print(lcd_status_message);
+  lcd_print_utf(lcd_status_message);
   #if LCD_HEIGHT < 4
     lcd.setCursor(0, 2);
   #else
@@ -801,7 +806,15 @@ static void lcd_implementation_status_screen() {
 
   #endif // FILAMENT_LCD_DISPLAY && SDSUPPORT
 
-  lcd_print(lcd_status_message);
+  #if ENABLED(STATUS_MESSAGE_SCROLLING)
+    lcd_print_utf(lcd_status_message + status_scroll_pos);
+    const uint8_t slen = lcd_strlen(lcd_status_message);
+    if (slen > LCD_WIDTH)
+      if (++status_scroll_pos > slen - LCD_WIDTH) status_scroll_pos = 0;
+      //status_scroll_pos = status_scroll_pos ? 0 : slen - LCD_WIDTH; // Toggle left-justified, right-justified
+  #else
+    lcd_print_utf(lcd_status_message);
+  #endif
 }
 
 #if ENABLED(ULTIPANEL)
