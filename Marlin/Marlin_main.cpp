@@ -130,6 +130,7 @@
  * M114 - Report current position.
  * M115 - Report capabilities. (Extended capabilities requires EXTENDED_CAPABILITIES_REPORT)
  * M117 - Display a message on the controller screen. (Requires an LCD)
+ * M118 - Display a message in the host console.
  * M119 - Report endstops status.
  * M120 - Enable endstops detection.
  * M121 - Disable endstops detection.
@@ -5141,7 +5142,7 @@ void home_all_axes() { gcode_G28(true); }
      *   T   Don't calibrate tower angle corrections
      *
      *   Cn.nn Calibration precision; when omitted calibrates to maximum precision
-     *   
+     *
      *   Fn  Force to run at least n iterations and takes the best result
      *
      *   Vn  Verbose level:
@@ -5687,7 +5688,7 @@ inline void gcode_G92() {
             update_software_endstops((AxisEnum)i);
 
             #if ENABLED(I2C_POSITION_ENCODERS)
-              I2CPEM.encoders[I2CPEM.idx_from_axis((AxisEnum) i)].set_axis_offset(position_shift[i]);
+              I2CPEM.encoders[I2CPEM.idx_from_axis((AxisEnum)i)].set_axis_offset(position_shift[i]);
             #endif
 
           #endif
@@ -7956,7 +7957,7 @@ inline void gcode_M115() {
       SERIAL_PROTOCOLLNPGM("Cap:LEVELING_DATA:0");
     #endif
 
-    // SOFTWARE_POWER (G30)
+    // SOFTWARE_POWER (M80, M81)
     #if HAS_POWER_SWITCH
       SERIAL_PROTOCOLLNPGM("Cap:SOFTWARE_POWER:1");
     #else
@@ -7990,6 +7991,18 @@ inline void gcode_M115() {
  * M117: Set LCD Status Message
  */
 inline void gcode_M117() { lcd_setstatus(parser.string_arg); }
+
+/**
+ * M118: Display a message in the host console.
+ *
+ *  A  Append '// ' for an action command, as in OctoPrint
+ *  E  Have the host 'echo:' the text
+ */
+inline void gcode_M118() {
+  if (parser.boolval('E')) SERIAL_ECHO_START();
+  if (parser.boolval('A')) SERIAL_ECHOPGM("// ");
+  SERIAL_ECHOLN(parser.string_arg);
+}
 
 /**
  * M119: Output endstop states to serial output
@@ -9146,7 +9159,6 @@ void quickstop_stepper() {
     int8_t ix = parser.intval('I', -1), iy = parser.intval('J', -1);
     const bool hasI = ix >= 0,
                hasJ = iy >= 0,
-               hasC = parser.seen('C'),
                hasZ = parser.seen('Z'),
                hasQ = !hasZ && parser.seen('Q');
 
@@ -10757,6 +10769,9 @@ void process_next_command() {
         break;
       case 117: // M117: Set LCD message text, if possible
         gcode_M117();
+        break;
+      case 118: // M118: Display a message in the host console
+        gcode_M118();
         break;
       case 119: // M119: Report endstop states
         gcode_M119();

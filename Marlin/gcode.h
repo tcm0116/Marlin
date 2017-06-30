@@ -36,7 +36,11 @@
 //#define DEBUG_GCODE_PARSER
 
 #if ENABLED(DEBUG_GCODE_PARSER)
-  #include "hex_print_routines.h"
+  #if ENABLED(AUTO_BED_LEVELING_UBL)
+    extern char* hex_address(const void * const w);
+  #else  
+    #include "hex_print_routines.h"
+  #endif
   #include "serial.h"
 #endif
 
@@ -100,7 +104,7 @@ public:
   // Index so that 'X' falls on index 24
   #define PARAM_IND(N)  ((N) >> 3)
   #define PARAM_BIT(N)  ((N) & 0x7)
-  #define LETTER_OFF(N) ((N) - 'A' + 1)
+  #define LETTER_OFF(N) ((N) - 'A')
   #define LETTER_IND(N) PARAM_IND(LETTER_OFF(N))
   #define LETTER_BIT(N) PARAM_BIT(LETTER_OFF(N))
 
@@ -132,7 +136,7 @@ public:
       const uint8_t ind = LETTER_OFF(c);
       if (ind >= COUNT(param)) return false; // Only A-Z
       const bool b = TEST(codebits[PARAM_IND(ind)], PARAM_BIT(ind));
-      if (b) value_ptr = command_ptr + param[ind];
+      if (b) value_ptr = param[ind] ? command_ptr + param[ind] : (char*)NULL;
       return b;
     }
 
