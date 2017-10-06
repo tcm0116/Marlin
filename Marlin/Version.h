@@ -35,20 +35,20 @@
   /**
    * Marlin release version identifier
    */
-  #define SHORT_BUILD_VERSION "1.1.5"
+  #define SHORT_BUILD_VERSION "1.1.5-TMoore"
 
   /**
    * Verbose version identifier which should contain a reference to the location
    * from where the binary was downloaded or the source code was compiled.
    */
-  #define DETAILED_BUILD_VERSION SHORT_BUILD_VERSION " (Github)"
+  #define DETAILED_BUILD_VERSION SHORT_BUILD_VERSION " (T. Moore)"
 
   /**
    * The STRING_DISTRIBUTION_DATE represents when the binary file was built,
    * here we define this default string as the date where the latest release
    * version was tagged.
    */
-  #define STRING_DISTRIBUTION_DATE "2017-08-28 12:00"
+  #define STRING_DISTRIBUTION_DATE __DATE__ " " __TIME__
 
   /**
    * Required minimum Configuration.h and Configuration_adv.h file versions.
@@ -70,7 +70,7 @@
   /**
    * Defines a generic printer name to be output to the LCD after booting Marlin.
    */
-  #define MACHINE_NAME "3D Printer"
+  #define MACHINE_NAME "HICTOP 3DP-18 (E0)"
 
   /**
    * The SOURCE_CODE_URL is the location where users will find the Marlin Source
@@ -78,7 +78,7 @@
    * has a distinct Github fork— the Source Code URL should just be the main
    * Marlin repository.
    */
-  #define SOURCE_CODE_URL "https://github.com/MarlinFirmware/Marlin"
+  #define SOURCE_CODE_URL "https://github.com/tcm0116/Marlin/tree/HICTOP_3DP-11"
 
   /**
    * Default generic printer UUID.
