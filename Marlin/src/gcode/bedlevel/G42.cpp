@@ -68,9 +68,9 @@ void GcodeSuite::G42() {
 
     // SCARA kinematic has "safe" XY raw moves
     #if IS_SCARA
-      prepare_uninterpolated_move_to_destination();
+      uninterpolated_move_to_destination();
     #else
-      prepare_move_to_destination();
+      move_to_destination();
     #endif
   }
 }

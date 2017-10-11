@@ -128,36 +128,21 @@ void sync_plan_position_e();
   #define SYNC_PLAN_POSITION_KINEMATIC() sync_plan_position()
 #endif
 
-/**
- * Move the planner to the current position from wherever it last moved
- * (or from wherever it has been told it is located).
- */
-void line_to_current_position();
-
-/**
- * Move the planner to the position stored in the destination array, which is
- * used by G0/G1/G2/G3/G5 and many other functions to set a destination.
- */
-void line_to_destination(const float fr_mm_s);
-
-inline void line_to_destination() { line_to_destination(feedrate_mm_s); }
-
 #if IS_KINEMATIC
-  void prepare_uninterpolated_move_to_destination(const float fr_mm_s=0.0);
+  void uninterpolated_move_to_destination(const float& fr_mm_s = feedrate_mm_s, const uint8_t extruder = active_extruder);
 #endif
 
-void prepare_move_to_destination();
+void move_to_destination(const float& fr_mm_s = feedrate_mm_s, const uint8_t extruder = active_extruder);
 
 /**
- * Blocking movement and shorthand functions
+ * Blocking probe movement and shorthand functions. Movement in the Z axis is
+ * performed prior to movement in the X or Y axes.
  */
-void do_blocking_move_to(const float &x, const float &y, const float &z, const float &fr_mm_s=0.0);
-void do_blocking_move_to_x(const float &x, const float &fr_mm_s=0.0);
-void do_blocking_move_to_z(const float &z, const float &fr_mm_s=0.0);
-void do_blocking_move_to_xy(const float &x, const float &y, const float &fr_mm_s=0.0);
-
-void setup_for_endstop_or_probe_move();
-void clean_up_after_endstop_or_probe_move();
+void do_blocking_probe_move_to(const float &x, const float &y, const float &z, const float &fr_mm_s=0.0);
+void do_blocking_probe_move_to_x(const float &x, const float &fr_mm_s=0.0);
+void do_blocking_probe_move_to_y(const float &y, const float &fr_mm_s=0.0);
+void do_blocking_probe_move_to_z(const float &z, const float &fr_mm_s=0.0);
+void do_blocking_probe_move_to_xy(const float &x, const float &y, const float &fr_mm_s=0.0);
 
 void bracket_probe_move(const bool before);
 void setup_for_endstop_or_probe_move();

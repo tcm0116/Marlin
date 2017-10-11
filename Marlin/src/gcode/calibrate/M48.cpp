@@ -195,7 +195,7 @@ void GcodeSuite::M48() {
             SERIAL_ECHOPAIR(" Y", Y_current);
             SERIAL_ECHOLNPAIR(" Z", current_position[Z_AXIS]);
           }
-          do_blocking_move_to_xy(X_current, Y_current);
+          do_blocking_probe_move_to_xy(X_current, Y_current);
         } // n_legs loop
       } // n_legs
 

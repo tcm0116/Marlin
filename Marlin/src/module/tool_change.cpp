@@ -209,7 +209,7 @@ void tool_change(const uint8_t tmp_extruder, const float fr_mm_s/*=0.0*/, bool n
             #endif
             // Park old head: 1) raise 2) move to park position 3) lower
             for (uint8_t i = 0; i < 3; i++)
-              planner.buffer_line(
+              planner.buffer_line_kinematic(
                 i == 0 ? current_position[X_AXIS] : xhome,
                 current_position[Y_AXIS],
                 i == 2 ? current_position[Z_AXIS] : raised_z,
@@ -521,7 +521,7 @@ void tool_change(const uint8_t tmp_extruder, const float fr_mm_s/*=0.0*/, bool n
           #if ENABLED(DEBUG_LEVELING_FEATURE)
             if (DEBUGGING(LEVELING)) DEBUG_POS("Move back", destination);
           #endif
-          prepare_move_to_destination();
+          move_to_destination();
         }
 
         #if ENABLED(SWITCHING_NOZZLE)
@@ -529,7 +529,7 @@ void tool_change(const uint8_t tmp_extruder, const float fr_mm_s/*=0.0*/, bool n
           if (z_raise != z_diff) {
             destination[Z_AXIS] += z_diff;
             feedrate_mm_s = planner.max_feedrate_mm_s[Z_AXIS];
-            prepare_move_to_destination();
+            move_to_destination();
           }
         #endif
 

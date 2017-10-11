@@ -499,7 +499,7 @@ void manage_inactivity(bool ignore_stepper_queue/*=false*/) {
       // travel moves have been received so enact them
       delayed_move_time = 0xFFFFFFFFUL; // force moves to be done
       set_destination_to_current();
-      prepare_move_to_destination();
+      move_to_destination();
     }
   #endif
 

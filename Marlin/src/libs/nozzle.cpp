@@ -56,18 +56,17 @@ void Nozzle::stroke(
     #endif // NOZZLE_CLEAN_GOBACK
 
     // Move to the starting point
-    do_blocking_move_to_xy(start.x, start.y);
-    do_blocking_move_to_z(start.z);
+    do_blocking_probe_move_to(start.x, start.y, start.z);
 
     // Start the stroke pattern
     for (uint8_t i = 0; i < (strokes >>1); i++) {
-      do_blocking_move_to_xy(end.x, end.y);
-      do_blocking_move_to_xy(start.x, start.y);
+      do_blocking_probe_move_to_xy(end.x, end.y);
+      do_blocking_probe_move_to_xy(start.x, start.y);
     }
 
     #if ENABLED(NOZZLE_CLEAN_GOBACK)
       // Move the nozzle to the initial point
-      do_blocking_move_to(initial.x, initial.y, initial.z);
+      do_blocking_probe_move_to(initial.x, initial.y, initial.z);
     #endif // NOZZLE_CLEAN_GOBACK
 
   #endif // NOZZLE_CLEAN_FEATURE
@@ -110,22 +109,20 @@ void Nozzle::zigzag(
         float const x = start.x + ( nozzle_clean_horizontal ? i * P : (A/P) * (P - FABS(FMOD((i*P), (2*P)) - P)) );
         float const y = start.y + (!nozzle_clean_horizontal ? i * P : (A/P) * (P - FABS(FMOD((i*P), (2*P)) - P)) );
 
-        do_blocking_move_to_xy(x, y);
-        if (i == 0) do_blocking_move_to_z(start.z);
+        do_blocking_probe_move_to(x, y, start.z);
       }
 
       for (int i = (objects << 1); i > -1; i--) {
         float const x = start.x + ( nozzle_clean_horizontal ? i * P : (A/P) * (P - FABS(FMOD((i*P), (2*P)) - P)) );
         float const y = start.y + (!nozzle_clean_horizontal ? i * P : (A/P) * (P - FABS(FMOD((i*P), (2*P)) - P)) );
 
-        do_blocking_move_to_xy(x, y);
+        do_blocking_probe_move_to_xy(x, y);
       }
     }
 
     #if ENABLED(NOZZLE_CLEAN_GOBACK)
       // Move the nozzle to the initial point
-      do_blocking_move_to_z(initial.z);
-      do_blocking_move_to_xy(initial.x, initial.y);
+      do_blocking_probe_move_to(initial.x, initial.y, initial.z);
     #endif // NOZZLE_CLEAN_GOBACK
 
   #endif // NOZZLE_CLEAN_FEATURE
@@ -159,15 +156,7 @@ void Nozzle::circle(
       };
     #endif // NOZZLE_CLEAN_GOBACK
 
-    if (start.z <= current_position[Z_AXIS]) {
-      // Order of movement is pretty darn important here
-      do_blocking_move_to_xy(start.x, start.y);
-      do_blocking_move_to_z(start.z);
-    }
-    else {
-      do_blocking_move_to_z(start.z);
-      do_blocking_move_to_xy(start.x, start.y);
-    }
+    do_blocking_probe_move_to(start.x, start.y, start.z);
 
     float x, y;
     for (uint8_t s = 0; s < strokes; s++) {
@@ -175,24 +164,16 @@ void Nozzle::circle(
         x = middle.x + sin((M_2_PI / NOZZLE_CLEAN_CIRCLE_FN) * i) * radius;
         y = middle.y + cos((M_2_PI / NOZZLE_CLEAN_CIRCLE_FN) * i) * radius;
 
-        do_blocking_move_to_xy(x, y);
+        do_blocking_probe_move_to_xy(x, y);
       }
     }
 
     // Let's be safe
-    do_blocking_move_to_xy(start.x, start.y);
+    do_blocking_probe_move_to_xy(start.x, start.y);
 
     #if ENABLED(NOZZLE_CLEAN_GOBACK)
       // Move the nozzle to the initial point
-      if (start.z <= initial.z) {
-        // As above order is important
-        do_blocking_move_to_z(initial.z);
-        do_blocking_move_to_xy(initial.x, initial.y);
-      }
-      else {
-        do_blocking_move_to_xy(initial.x, initial.y);
-        do_blocking_move_to_z(initial.z);
-      }
+      do_blocking_probe_move_to(initial.x, initial.y, initial.z);
     #endif // NOZZLE_CLEAN_GOBACK
 
   #endif // NOZZLE_CLEAN_FEATURE
@@ -214,7 +195,7 @@ void Nozzle::clean(
   #if ENABLED(NOZZLE_CLEAN_FEATURE)
     #if ENABLED(DELTA)
       if (current_position[Z_AXIS] > delta_clip_start_height)
-        do_blocking_move_to_z(delta_clip_start_height);
+        do_blocking_probe_move_to_z(delta_clip_start_height);
     #endif
     switch (pattern) {
       case 1:
@@ -246,20 +227,20 @@ void Nozzle::park(
 
     switch(z_action) {
       case 1: // force Z-park height
-        do_blocking_move_to_z(park.z);
+        do_blocking_probe_move_to_z(park.z);
         break;
 
       case 2: // Raise by Z-park height
-        do_blocking_move_to_z(
+        do_blocking_probe_move_to_z(
           (z + park.z > Z_MAX_POS) ? Z_MAX_POS : z + park.z);
         break;
 
       default: // Raise to Z-park height if lower
         if (current_position[Z_AXIS] < park.z)
-          do_blocking_move_to_z(park.z);
+          do_blocking_probe_move_to_z(park.z);
     }
 
-    do_blocking_move_to_xy(park.x, park.y);
+    do_blocking_probe_move_to_xy(park.x, park.y);
 
   #endif // NOZZLE_PARK_FEATURE
 }

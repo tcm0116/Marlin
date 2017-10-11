@@ -97,12 +97,6 @@ static void ensure_safe_temperature() {
 
 bool move_away_flag = false;
 
-#if IS_KINEMATIC
-  #define RUNPLAN(RATE_MM_S) planner.buffer_line_kinematic(destination, RATE_MM_S, active_extruder)
-#else
-  #define RUNPLAN(RATE_MM_S) line_to_destination(RATE_MM_S)
-#endif
-
 bool pause_print(const float &retract, const float &z_lift, const float &x_pos, const float &y_pos,
                         const float &unload_length/*=0*/ , const int8_t max_beep_count/*=0*/, const bool show_lcd/*=false*/
 ) {
@@ -148,16 +142,16 @@ bool pause_print(const float &retract, const float &z_lift, const float &x_pos, 
     // Initial retract before move to filament change position
     set_destination_to_current();
     destination[E_AXIS] += retract;
-    RUNPLAN(PAUSE_PARK_RETRACT_FEEDRATE);
+    move_to_destination(PAUSE_PARK_RETRACT_FEEDRATE);
     stepper.synchronize();
   }
 
   // Lift Z axis
   if (z_lift > 0)
-    do_blocking_move_to_z(current_position[Z_AXIS] + z_lift, PAUSE_PARK_Z_FEEDRATE);
+    do_blocking_probe_move_to_z(current_position[Z_AXIS] + z_lift, PAUSE_PARK_Z_FEEDRATE);
 
   // Move XY axes to filament exchange position
-  do_blocking_move_to_xy(x_pos, y_pos, PAUSE_PARK_XY_FEEDRATE);
+  do_blocking_probe_move_to_xy(x_pos, y_pos, PAUSE_PARK_XY_FEEDRATE);
 
   if (unload_length != 0) {
     if (show_lcd) {
@@ -170,7 +164,7 @@ bool pause_print(const float &retract, const float &z_lift, const float &x_pos, 
     // Unload filament
     set_destination_to_current();
     destination[E_AXIS] += unload_length;
-    RUNPLAN(FILAMENT_CHANGE_UNLOAD_FEEDRATE);
+    move_to_destination(FILAMENT_CHANGE_UNLOAD_FEEDRATE);
     stepper.synchronize();
   }
 
@@ -298,7 +292,7 @@ void resume_print(const float &load_length/*=0*/, const float &initial_extrude_l
 
     // Load filament
     destination[E_AXIS] += load_length;
-    RUNPLAN(FILAMENT_CHANGE_LOAD_FEEDRATE);
+    move_to_destination(FILAMENT_CHANGE_LOAD_FEEDRATE);
     stepper.synchronize();
   }
 
@@ -313,7 +307,7 @@ void resume_print(const float &load_length/*=0*/, const float &initial_extrude_l
 
         // Extrude filament to get into hotend
         destination[E_AXIS] += extrude_length;
-        RUNPLAN(ADVANCED_PAUSE_EXTRUDE_FEEDRATE);
+        move_to_destination(ADVANCED_PAUSE_EXTRUDE_FEEDRATE);
         stepper.synchronize();
       }
 
@@ -341,8 +335,8 @@ void resume_print(const float &load_length/*=0*/, const float &initial_extrude_l
   planner.set_e_position_mm(current_position[E_AXIS]);
 
   // Move XY to starting position, then Z
-  do_blocking_move_to_xy(resume_position[X_AXIS], resume_position[Y_AXIS], PAUSE_PARK_XY_FEEDRATE);
-  do_blocking_move_to_z(resume_position[Z_AXIS], PAUSE_PARK_Z_FEEDRATE);
+  do_blocking_probe_move_to_xy(resume_position[X_AXIS], resume_position[Y_AXIS], PAUSE_PARK_XY_FEEDRATE);
+  do_blocking_probe_move_to_z(resume_position[Z_AXIS], PAUSE_PARK_Z_FEEDRATE);
 
   #if ENABLED(FILAMENT_RUNOUT_SENSOR)
     filament_ran_out = false;

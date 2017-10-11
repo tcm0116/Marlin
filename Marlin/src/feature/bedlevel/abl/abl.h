@@ -43,7 +43,7 @@
   #endif
 
   #if !IS_KINEMATIC
-    void bilinear_line_to_destination(const float fr_mm_s, uint16_t x_splits=0xFFFF, uint16_t y_splits=0xFFFF);
+    void bilinear_line_to_destination(const float& fr_mm_s, const uint8_t extruder = active_extruder, uint16_t x_splits=0xFFFF, uint16_t y_splits=0xFFFF);
   #endif
 
 #endif // AUTO_BED_LEVELING_BILINEAR

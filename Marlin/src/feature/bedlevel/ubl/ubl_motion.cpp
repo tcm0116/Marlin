@@ -480,7 +480,7 @@
     // We don't want additional apply_leveling() performed by regular buffer_line or buffer_line_kinematic,
     // so we call _buffer_line directly here.  Per-segmented leveling and kinematics performed first.
 
-    inline void _O2 ubl_buffer_segment_raw( float rx, float ry, float rz, float le, float fr ) {
+    inline void _O2 ubl_buffer_segment_raw( float rx, float ry, float rz, float le, float fr, uint8_t extruder ) {
 
       #if ENABLED(DELTA)  // apply delta inverse_kinematics
 
@@ -496,7 +496,7 @@
                                          - HYPOT2( delta_tower[C_AXIS][X_AXIS] - rx,
                                                    delta_tower[C_AXIS][Y_AXIS] - ry ));
 
-        planner._buffer_line(delta_A, delta_B, delta_C, le, fr, active_extruder);
+        planner._buffer_line(delta_A, delta_B, delta_C, le, fr, extruder);
 
       #elif IS_SCARA  // apply scara inverse_kinematics (should be changed to save raw->logical->raw)
 
@@ -514,7 +514,7 @@
         scara_oldB = delta[B_AXIS];
         float s_feedrate = max(adiff, bdiff) * scara_feed_factor;
 
-        planner._buffer_line(delta[A_AXIS], delta[B_AXIS], delta[C_AXIS], le, s_feedrate, active_extruder);
+        planner._buffer_line(delta[A_AXIS], delta[B_AXIS], delta[C_AXIS], le, s_feedrate, extruder);
 
       #else // CARTESIAN
 
@@ -524,7 +524,7 @@
                     ly = LOGICAL_Y_POSITION(ry),
                     lz = LOGICAL_Z_POSITION(rz);
 
-        planner._buffer_line(lx, ly, lz, le, fr, active_extruder);
+        planner._buffer_line(lx, ly, lz, le, fr, extruder);
 
       #endif
 
@@ -537,7 +537,7 @@
      * Returns true if did NOT move, false if moved (requires current_position update).
      */
 
-    bool _O2 unified_bed_leveling::prepare_segmented_line_to(const float ltarget[XYZE], const float &feedrate) {
+    bool _O2 unified_bed_leveling::prepare_segmented_line_to(const float ltarget[XYZE], const float &feedrate, const uint8_t extruder) {
 
       if (!position_is_reachable_xy(ltarget[X_AXIS], ltarget[Y_AXIS]))  // fail if moving outside reachable boundary
         return true; // did not move, so current_position still accurate
@@ -608,7 +608,7 @@
             seg_le = ltarget[E_AXIS];
           }
 
-          ubl_buffer_segment_raw( seg_rx, seg_ry, seg_rz + z_offset, seg_le, feedrate );
+          ubl_buffer_segment_raw( seg_rx, seg_ry, seg_rz + z_offset, seg_le, feedrate, extruder );
 
         } while (segments);
 
@@ -694,7 +694,7 @@
             seg_le = ltarget[E_AXIS];
           }
 
-          ubl_buffer_segment_raw( seg_rx, seg_ry, seg_rz + z_cxcy, seg_le, feedrate );
+          ubl_buffer_segment_raw( seg_rx, seg_ry, seg_rz + z_cxcy, seg_le, feedrate, extruder );
 
           if (segments == 0 )                       // done with last segment
             return false;                           // did not set_current_to_destination()

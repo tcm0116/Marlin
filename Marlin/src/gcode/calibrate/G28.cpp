@@ -58,7 +58,7 @@
                 mlratio = mlx > mly ? mly / mlx : mlx / mly,
                 fr_mm_s = min(homing_feedrate(X_AXIS), homing_feedrate(Y_AXIS)) * SQRT(sq(mlratio) + 1.0);
 
-    do_blocking_move_to_xy(1.5 * mlx * x_axis_home_dir, 1.5 * mly * home_dir(Y_AXIS), fr_mm_s);
+    do_blocking_probe_move_to_xy(1.5 * mlx * x_axis_home_dir, 1.5 * mly * home_dir(Y_AXIS), fr_mm_s);
     endstops.hit_on_purpose(); // clear endstop hit flags
     current_position[X_AXIS] = current_position[Y_AXIS] = 0.0;
   }
@@ -106,7 +106,7 @@
         active_extruder_parked = false;
       #endif
 
-      do_blocking_move_to_xy(destination[X_AXIS], destination[Y_AXIS]);
+      do_blocking_probe_move_to_xy(destination[X_AXIS], destination[Y_AXIS]);
       HOMEAXIS(Z);
     }
     else {
@@ -217,7 +217,7 @@ void GcodeSuite::G28(const bool always_home_all) {
               SERIAL_ECHOLNPAIR("Raise Z (before homing) to ", destination[Z_AXIS]);
           #endif
 
-          do_blocking_move_to_z(destination[Z_AXIS]);
+          do_blocking_probe_move_to_z(destination[Z_AXIS]);
         }
       }
 
@@ -305,7 +305,7 @@ void GcodeSuite::G28(const bool always_home_all) {
 
   #if ENABLED(DELTA) && ENABLED(DELTA_HOME_TO_SAFE_ZONE)
     // move to a height where we can use the full xy-area
-    do_blocking_move_to_z(delta_clip_start_height);
+    do_blocking_probe_move_to_z(delta_clip_start_height);
   #endif
 
   #if ENABLED(AUTO_BED_LEVELING_UBL)

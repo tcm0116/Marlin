@@ -416,7 +416,7 @@ void I2CPositionEncoder::calibrate_steps_mm(const uint8_t iter) {
     delay(250);
     startCount = get_position();
 
-    //do_blocking_move_to(endCoord[X_AXIS],endCoord[Y_AXIS],endCoord[Z_AXIS]);
+    //do_blocking_probe_move_to(endCoord[X_AXIS],endCoord[Y_AXIS],endCoord[Z_AXIS]);
 
     planner.buffer_line(endCoord[X_AXIS],endCoord[Y_AXIS],endCoord[Z_AXIS],
                         stepper.get_axis_position_mm(E_AXIS), feedrate, 0);

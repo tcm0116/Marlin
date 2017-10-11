@@ -2749,13 +2749,7 @@ void kill_screen(const char* lcd_msg) {
 
       #if IS_KINEMATIC
 
-        const float old_feedrate = feedrate_mm_s;
-        feedrate_mm_s = MMM_TO_MMS(manual_feedrate_mm_m[manual_move_axis]);
-
-        #if EXTRUDERS > 1
-          const int8_t old_extruder = active_extruder;
-          active_extruder = manual_move_e_index;
-        #endif
+        const float fr_mm_s = MMM_TO_MMS(manual_feedrate_mm_m[manual_move_axis]);
 
         // Set movement on a single axis
         set_destination_to_current();
@@ -2767,13 +2761,8 @@ void kill_screen(const char* lcd_msg) {
 
         // Set a blocking flag so no new moves can be added until all segments are done
         processing_manual_move = true;
-        prepare_move_to_destination(); // will call set_current_to_destination
+        move_to_destination(fr_mm_s, manual_move_e_index); // will call set_current_to_destination
         processing_manual_move = false;
-
-        feedrate_mm_s = old_feedrate;
-        #if EXTRUDERS > 1
-          active_extruder = old_extruder;
-        #endif
 
       #else
 

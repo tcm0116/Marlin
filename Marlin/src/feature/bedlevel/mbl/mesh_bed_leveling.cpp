@@ -56,7 +56,7 @@
    * Prepare a mesh-leveled linear move in a Cartesian setup,
    * splitting the move where it crosses mesh borders.
    */
-  void mesh_line_to_destination(const float fr_mm_s, uint8_t x_splits, uint8_t y_splits) {
+  void mesh_line_to_destination(const float& fr_mm_s, const uint8_t extruder, uint8_t x_splits, uint8_t y_splits) {
     int cx1 = mbl.cell_index_x(RAW_CURRENT_POSITION(X)),
         cy1 = mbl.cell_index_y(RAW_CURRENT_POSITION(Y)),
         cx2 = mbl.cell_index_x(RAW_X_POSITION(destination[X_AXIS])),
@@ -68,8 +68,7 @@
 
     if (cx1 == cx2 && cy1 == cy2) {
       // Start and end on same mesh square
-      line_to_destination(fr_mm_s);
-      set_current_to_destination();
+      move_to_destination(fr_mm_s, extruder);
       return;
     }
 
@@ -95,8 +94,7 @@
     }
     else {
       // Already split on a border
-      line_to_destination(fr_mm_s);
-      set_current_to_destination();
+      move_to_destination(fr_mm_s, extruder);
       return;
     }
 
@@ -104,11 +102,11 @@
     destination[E_AXIS] = MBL_SEGMENT_END(E);
 
     // Do the split and look for more borders
-    mesh_line_to_destination(fr_mm_s, x_splits, y_splits);
+    mesh_line_to_destination(fr_mm_s, extruder, x_splits, y_splits);
 
     // Restore destination from stack
     COPY(destination, end);
-    mesh_line_to_destination(fr_mm_s, x_splits, y_splits);
+    mesh_line_to_destination(fr_mm_s, extruder, x_splits, y_splits);
   }
 
   void mbl_mesh_report() {

@@ -62,9 +62,9 @@ void GcodeSuite::G0_G1(
     #endif // FWRETRACT
 
     #if IS_SCARA
-      fast_move ? prepare_uninterpolated_move_to_destination() : prepare_move_to_destination();
+      fast_move ? uninterpolated_move_to_destination() : move_to_destination();
     #else
-      prepare_move_to_destination();
+      move_to_destination();
     #endif
   }
 }

@@ -142,14 +142,14 @@ void FWRetract::retract(const bool retracting
     feedrate_mm_s = retract_feedrate_mm_s;
     current_position[E_AXIS] += (swapping ? swap_retract_length : retract_length) / planner.volumetric_multiplier[active_extruder];
     sync_plan_position_e();
-    prepare_move_to_destination();
+    move_to_destination();
 
     // Is a Z hop set, and has the hop not yet been done?
     if (has_zhop) {
       hop_amount += retract_zlift;                // Carriage is raised for retraction hop
       current_position[Z_AXIS] -= retract_zlift;  // Pretend current pos is lower. Next move raises Z.
       SYNC_PLAN_POSITION_KINEMATIC();             // Set the planner to the new position
-      prepare_move_to_destination();              // Raise up to the old current pos
+      move_to_destination();                      // Raise up to the old current pos
     }
   }
   else {
@@ -157,7 +157,7 @@ void FWRetract::retract(const bool retracting
     if (hop_amount && NEAR(hop_height, destination[Z_AXIS])) {
       current_position[Z_AXIS] += hop_amount;     // Pretend current pos is higher. Next move lowers Z.
       SYNC_PLAN_POSITION_KINEMATIC();             // Set the planner to the new position
-      prepare_move_to_destination();              // Lower to the old current pos
+      move_to_destination();                      // Lower to the old current pos
       hop_amount = 0.0;
     }
 
@@ -168,7 +168,7 @@ void FWRetract::retract(const bool retracting
     current_position[E_AXIS] -= move_e / planner.volumetric_multiplier[active_extruder];
     sync_plan_position_e();
 
-    prepare_move_to_destination();  // Recover E
+    move_to_destination();  // Recover E
   }
 
   // Restore flow and feedrate

@@ -365,7 +365,7 @@ float bilinear_z_offset(const float logical[XYZ]) {
    * Prepare a bilinear-leveled linear move on Cartesian,
    * splitting the move where it crosses grid borders.
    */
-  void bilinear_line_to_destination(const float fr_mm_s, uint16_t x_splits, uint16_t y_splits) {
+  void bilinear_line_to_destination(const float& fr_mm_s, const uint8_t extruder, uint16_t x_splits, uint16_t y_splits) {
     int cx1 = CELL_INDEX(X, current_position[X_AXIS]),
         cy1 = CELL_INDEX(Y, current_position[Y_AXIS]),
         cx2 = CELL_INDEX(X, destination[X_AXIS]),
@@ -377,8 +377,7 @@ float bilinear_z_offset(const float logical[XYZ]) {
 
     if (cx1 == cx2 && cy1 == cy2) {
       // Start and end on same mesh square
-      line_to_destination(fr_mm_s);
-      set_current_to_destination();
+      move_to_destination(fr_mm_s, extruder);
       return;
     }
 
@@ -404,8 +403,7 @@ float bilinear_z_offset(const float logical[XYZ]) {
     }
     else {
       // Already split on a border
-      line_to_destination(fr_mm_s);
-      set_current_to_destination();
+      line_to_deprepare_move_to_destinationstination(fr_mm_s, extruder);
       return;
     }
 
@@ -413,11 +411,11 @@ float bilinear_z_offset(const float logical[XYZ]) {
     destination[E_AXIS] = LINE_SEGMENT_END(E);
 
     // Do the split and look for more borders
-    bilinear_line_to_destination(fr_mm_s, x_splits, y_splits);
+    bilinear_line_to_destination(fr_mm_s, extruder, x_splits, y_splits);
 
     // Restore destination from stack
     COPY(destination, end);
-    bilinear_line_to_destination(fr_mm_s, x_splits, y_splits);
+    bilinear_line_to_destination(fr_mm_s, extruder, x_splits, y_splits);
   }
 
 #endif // !IS_KINEMATIC

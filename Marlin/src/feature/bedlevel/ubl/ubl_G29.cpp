@@ -415,7 +415,7 @@
           z2 -= get_z_correction(LOGICAL_X_POSITION(UBL_PROBE_PT_2_X), LOGICAL_Y_POSITION(UBL_PROBE_PT_2_Y)) /* + zprobe_zoffset */ ;
           z3 -= get_z_correction(LOGICAL_X_POSITION(UBL_PROBE_PT_3_X), LOGICAL_Y_POSITION(UBL_PROBE_PT_3_Y)) /* + zprobe_zoffset */ ;
 
-          do_blocking_move_to_xy(0.5 * (UBL_MESH_MAX_X - (UBL_MESH_MIN_X)), 0.5 * (UBL_MESH_MAX_Y - (UBL_MESH_MIN_Y)));
+          do_blocking_probe_move_to_xy(0.5 * (UBL_MESH_MAX_X - (UBL_MESH_MIN_X)), 0.5 * (UBL_MESH_MAX_Y - (UBL_MESH_MIN_Y)));
           tilt_mesh_based_on_3pts(z1, z2, z3);
           restore_ubl_active_state_and_leave();
         }
@@ -466,7 +466,7 @@
             // Manually Probe Mesh in areas that can't be reached by the probe
             //
             SERIAL_PROTOCOLLNPGM("Manually probing unreachable mesh locations.");
-            do_blocking_move_to_z(Z_CLEARANCE_BETWEEN_PROBES);
+            do_blocking_probe_move_to_z(Z_CLEARANCE_BETWEEN_PROBES);
             if (!g29_x_flag && !g29_y_flag) {
               /**
                * Use a good default location for the path.
@@ -684,7 +684,7 @@
 
         has_control_of_lcd_panel = true;     // Grab the LCD Hardware
         float measured_z = 1.5;
-        do_blocking_move_to_z(measured_z);  // Get close to the bed, but leave some space so we don't damage anything
+        do_blocking_probe_move_to_z(measured_z);  // Get close to the bed, but leave some space so we don't damage anything
                                             // The user is not going to be locking in a new Z-Offset very often so
                                             // it won't be that painful to spin the Encoder Wheel for 1.5mm
         lcd_refresh();
@@ -695,7 +695,7 @@
         do {
           measured_z = lcd_z_offset_edit();
           idle();
-          do_blocking_move_to_z(measured_z);
+          do_blocking_probe_move_to_z(measured_z);
         } while (!ubl_lcd_clicked());
 
         has_control_of_lcd_panel = true;   // There is a race condition for the encoder click.
@@ -712,7 +712,7 @@
           idle();
           if (ELAPSED(millis(), nxt)) {
             SERIAL_PROTOCOLLNPGM("\nZ-Offset Adjustment Stopped.");
-            do_blocking_move_to_z(Z_CLEARANCE_DEPLOY_PROBE);
+            do_blocking_probe_move_to_z(Z_CLEARANCE_DEPLOY_PROBE);
             LCD_MESSAGEPGM(MSG_UBL_Z_OFFSET_STOPPED);
             restore_ubl_active_state_and_leave();
             goto LEAVE;
@@ -833,7 +833,7 @@
       STOW_PROBE();
       restore_ubl_active_state_and_leave();
 
-      do_blocking_move_to_xy(
+      do_blocking_probe_move_to_xy(
         constrain(lx - (X_PROBE_OFFSET_FROM_EXTRUDER), UBL_MESH_MIN_X, UBL_MESH_MAX_X),
         constrain(ly - (Y_PROBE_OFFSET_FROM_EXTRUDER), UBL_MESH_MIN_Y, UBL_MESH_MAX_Y)
       );
@@ -956,7 +956,7 @@
       while (!ubl_lcd_clicked()) {     // we need the loop to move the nozzle based on the encoder wheel here!
         idle();
         if (encoder_diff) {
-          do_blocking_move_to_z(current_position[Z_AXIS] + 0.01 * float(encoder_diff));
+          do_blocking_probe_move_to_z(current_position[Z_AXIS] + 0.01 * float(encoder_diff));
           encoder_diff = 0;
         }
       }
@@ -970,8 +970,8 @@
       has_control_of_lcd_panel = true;
       save_ubl_active_state_and_disable();   // Disable bed level correction for probing
 
-      do_blocking_move_to_z(in_height);
-      do_blocking_move_to_xy(0.5 * (UBL_MESH_MAX_X - (UBL_MESH_MIN_X)), 0.5 * (UBL_MESH_MAX_Y - (UBL_MESH_MIN_Y)));
+      do_blocking_probe_move_to_z(in_height);
+      do_blocking_probe_move_to_xy(0.5 * (UBL_MESH_MAX_X - (UBL_MESH_MIN_X)), 0.5 * (UBL_MESH_MAX_Y - (UBL_MESH_MIN_Y)));
         //, min(planner.max_feedrate_mm_s[X_AXIS], planner.max_feedrate_mm_s[Y_AXIS]) / 2.0);
       stepper.synchronize();
 
@@ -981,7 +981,7 @@
       echo_and_take_a_measurement();
 
       const float z1 = measure_point_with_encoder();
-      do_blocking_move_to_z(current_position[Z_AXIS] + SIZE_OF_LITTLE_RAISE);
+      do_blocking_probe_move_to_z(current_position[Z_AXIS] + SIZE_OF_LITTLE_RAISE);
       stepper.synchronize();
 
       SERIAL_PROTOCOLPGM("Remove shim");
@@ -990,7 +990,7 @@
 
       const float z2 = measure_point_with_encoder();
 
-      do_blocking_move_to_z(current_position[Z_AXIS] + Z_CLEARANCE_BETWEEN_PROBES);
+      do_blocking_probe_move_to_z(current_position[Z_AXIS] + Z_CLEARANCE_BETWEEN_PROBES);
 
       const float thickness = abs(z1 - z2);
 
@@ -1014,8 +1014,8 @@
       has_control_of_lcd_panel = true;
 
       save_ubl_active_state_and_disable();   // we don't do bed level correction because we want the raw data when we probe
-      do_blocking_move_to_z(Z_CLEARANCE_BETWEEN_PROBES);
-      do_blocking_move_to_xy(lx, ly);
+      do_blocking_probe_move_to_z(Z_CLEARANCE_BETWEEN_PROBES);
+      do_blocking_probe_move_to_xy(lx, ly);
 
       lcd_return_to_status();
 
@@ -1032,12 +1032,12 @@
 
         if (!position_is_reachable_raw_xy(rawx, rawy)) break; // SHOULD NOT OCCUR (find_closest_mesh_point only returns reachable points)
 
-        do_blocking_move_to_z(Z_CLEARANCE_BETWEEN_PROBES);
+        do_blocking_probe_move_to_z(Z_CLEARANCE_BETWEEN_PROBES);
 
         LCD_MESSAGEPGM(MSG_UBL_MOVING_TO_NEXT);
 
-        do_blocking_move_to_xy(xProbe, yProbe);
-        do_blocking_move_to_z(z_clearance);
+        do_blocking_probe_move_to_xy(xProbe, yProbe);
+        do_blocking_probe_move_to_z(z_clearance);
 
         KEEPALIVE_STATE(PAUSED_FOR_USER);
         has_control_of_lcd_panel = true;
@@ -1054,7 +1054,7 @@
         while (!ubl_lcd_clicked()) {                     // we need the loop to move the nozzle based on the encoder wheel here!
           idle();
           if (encoder_diff) {
-            do_blocking_move_to_z(current_position[Z_AXIS] + float(encoder_diff) * z_step);
+            do_blocking_probe_move_to_z(current_position[Z_AXIS] + float(encoder_diff) * z_step);
             encoder_diff = 0;
           }
         }
@@ -1067,7 +1067,7 @@
           idle();
           if (ELAPSED(millis(), nxt)) {
             SERIAL_PROTOCOLLNPGM("\nMesh only partially populated.");
-            do_blocking_move_to_z(Z_CLEARANCE_DEPLOY_PROBE);
+            do_blocking_probe_move_to_z(Z_CLEARANCE_DEPLOY_PROBE);
 
             #if ENABLED(NEWPANEL)
               lcd_quick_feedback();
@@ -1093,8 +1093,8 @@
 
       restore_ubl_active_state_and_leave();
       KEEPALIVE_STATE(IN_HANDLER);
-      do_blocking_move_to_z(Z_CLEARANCE_DEPLOY_PROBE);
-      do_blocking_move_to_xy(lx, ly);
+      do_blocking_probe_move_to_z(Z_CLEARANCE_DEPLOY_PROBE);
+      do_blocking_probe_move_to_xy(lx, ly);
     }
 
   #endif // NEWPANEL
@@ -1501,8 +1501,8 @@
 
       LCD_MESSAGEPGM(MSG_UBL_FINE_TUNE_MESH);
 
-      do_blocking_move_to_z(Z_CLEARANCE_BETWEEN_PROBES);
-      do_blocking_move_to_xy(lx, ly);
+      do_blocking_probe_move_to_z(Z_CLEARANCE_BETWEEN_PROBES);
+      do_blocking_probe_move_to_xy(lx, ly);
 
       uint16_t not_done[16];
       memset(not_done, 0xFF, sizeof(not_done));
@@ -1525,8 +1525,8 @@
         if (isnan(new_z)) // if the mesh point is invalid, set it to 0.0 so it can be edited
           new_z = 0.0;
 
-        do_blocking_move_to_z(Z_CLEARANCE_BETWEEN_PROBES);    // Move the nozzle to where we are going to edit
-        do_blocking_move_to_xy(LOGICAL_X_POSITION(rawx), LOGICAL_Y_POSITION(rawy));
+        do_blocking_probe_move_to_z(Z_CLEARANCE_BETWEEN_PROBES);    // Move the nozzle to where we are going to edit
+        do_blocking_probe_move_to_xy(LOGICAL_X_POSITION(rawx), LOGICAL_Y_POSITION(rawy));
 
         new_z = FLOOR(new_z * 1000.0) * 0.001; // Chop off digits after the 1000ths place
 
@@ -1542,7 +1542,7 @@
         do {
           new_z = lcd_mesh_edit();
           #if ENABLED(UBL_MESH_EDIT_MOVES_Z)
-            do_blocking_move_to_z(h_offset + new_z); // Move the nozzle as the point is edited
+            do_blocking_probe_move_to_z(h_offset + new_z); // Move the nozzle as the point is edited
           #endif
           idle();
         } while (!ubl_lcd_clicked());
@@ -1562,7 +1562,7 @@
           idle();
           if (ELAPSED(millis(), nxt)) {
             lcd_return_to_status();
-            do_blocking_move_to_z(Z_CLEARANCE_BETWEEN_PROBES);
+            do_blocking_probe_move_to_z(Z_CLEARANCE_BETWEEN_PROBES);
             LCD_MESSAGEPGM(MSG_EDITING_STOPPED);
 
             while (ubl_lcd_clicked()) idle();
@@ -1586,9 +1586,9 @@
 
       if (do_ubl_mesh_map) display_map(g29_map_type);
       restore_ubl_active_state_and_leave();
-      do_blocking_move_to_z(Z_CLEARANCE_BETWEEN_PROBES);
+      do_blocking_probe_move_to_z(Z_CLEARANCE_BETWEEN_PROBES);
 
-      do_blocking_move_to_xy(lx, ly);
+      do_blocking_probe_move_to_xy(lx, ly);
 
       LCD_MESSAGEPGM(MSG_UBL_DONE_EDITING_MESH);
       SERIAL_ECHOLNPGM("Done Editing Mesh");

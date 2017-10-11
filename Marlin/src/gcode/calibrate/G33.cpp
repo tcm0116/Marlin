@@ -98,7 +98,7 @@ static void G33_cleanup(
   #endif
 ) {
   #if ENABLED(DELTA_HOME_TO_SAFE_ZONE)
-    do_blocking_move_to_z(delta_clip_start_height);
+    do_blocking_probe_move_to_z(delta_clip_start_height);
   #endif
   STOW_PROBE();
   clean_up_after_endstop_or_probe_move();

@@ -50,7 +50,7 @@ static bool G38_run_probe() {
   endstops.enable(true);
   G38_move = true;
   G38_endstop_hit = false;
-  prepare_move_to_destination();
+  move_to_destination();
   stepper.synchronize();
   G38_move = false;
 
@@ -67,7 +67,7 @@ static bool G38_run_probe() {
       set_destination_to_current();
       LOOP_XYZ(i) destination[i] += retract_mm[i];
       endstops.enable(false);
-      prepare_move_to_destination();
+      move_to_destination();
       stepper.synchronize();
 
       feedrate_mm_s /= 4;
@@ -77,7 +77,7 @@ static bool G38_run_probe() {
 
       endstops.enable(true);
       G38_move = true;
-      prepare_move_to_destination();
+      move_to_destination();
       stepper.synchronize();
       G38_move = false;
 

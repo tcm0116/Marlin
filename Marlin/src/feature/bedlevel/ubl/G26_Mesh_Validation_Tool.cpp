@@ -172,10 +172,7 @@ bool unified_bed_leveling::g26_continue_with_closest,
 int16_t unified_bed_leveling::g26_repeats;
 
 void unified_bed_leveling::G26_line_to_destination(const float &feed_rate) {
-  const float save_feedrate = feedrate_mm_s;
-  feedrate_mm_s = feed_rate;      // use specified feed rate
-  prepare_move_to_destination();  // will ultimately call ubl.line_to_destination_cartesian or ubl.prepare_linear_move_to for UBL_DELTA
-  feedrate_mm_s = save_feedrate;  // restore global feed rate
+  move_to_destination(feed_rate);  // will ultimately call ubl.line_to_destination_cartesian or ubl.prepare_linear_move_to for UBL_DELTA
 }
 
 #if ENABLED(NEWPANEL)
@@ -219,11 +216,8 @@ void unified_bed_leveling::G26() {
   // or if the parameter parsing did not go OK, abort
   if (axis_unhomed_error() || parse_G26_parameters()) return;
 
-  if (current_position[Z_AXIS] < Z_CLEARANCE_BETWEEN_PROBES) {
-    do_blocking_move_to_z(Z_CLEARANCE_BETWEEN_PROBES);
-    stepper.synchronize();
-    set_current_to_destination();
-  }
+  if (current_position[Z_AXIS] < Z_CLEARANCE_BETWEEN_PROBES)
+    do_blocking_probe_move_to_z(Z_CLEARANCE_BETWEEN_PROBES);
 
   if (turn_on_heaters()) goto LEAVE;
 
