@@ -97,10 +97,20 @@
  * Select which serial port on the board will be used for communication with the host.
  * This allows the connection of wireless adapters (for instance) to non-default port pins.
  * Serial port 0 is always used by the Arduino bootloader regardless of this setting.
+ * Serial port -1 is the USB emulated serial port, if avaialble.
  *
- * :[0, 1, 2, 3, 4, 5, 6, 7]
+ * :[-1, 0, 1, 2, 3, 4, 5, 6, 7]
  */
 #define SERIAL_PORT 0
+
+/**
+ * Select a secondary serial port on the board will be used for communication with the host.
+ * This allows the connection of wireless adapters (for instance) to non-default port pins.
+ * Serial port -1 is the USB emulated serial port, if avaialble.
+ *
+ * :[-1, 0, 1, 2, 3, 4, 5, 6, 7]
+ */
+//#define SECONDARY_SERIAL_PORT -1
 
 /**
  * This setting determines the communication speed of the printer.

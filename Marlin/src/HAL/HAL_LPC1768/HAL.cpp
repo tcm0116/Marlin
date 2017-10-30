@@ -29,6 +29,39 @@ extern "C" {
 
 HalSerial usb_serial;
 
+#if SERIAL_PORT == -1
+  SerialFacade<HalSerial> MYSERIAL0(usb_serial);
+#elif SERIAL_PORT == 0
+  SerialFacade<HardwareSerial> MYSERIAL0(Serial);
+#elif SERIAL_PORT == 1
+  SerialFacade<HardwareSerial> MYSERIAL0(Serial1);
+#elif SERIAL_PORT == 2
+  SerialFacade<HardwareSerial> MYSERIAL0(Serial2);
+#elif SERIAL_PORT == 3
+  SerialFacade<HardwareSerial> MYSERIAL0(Serial3);
+#endif
+
+#ifdef SECONDARY_SERIAL_PORT
+  #if SECONDARY_SERIAL_PORT == -1
+    SerialFacade<HalSerial> MYSERIAL1(usb_serial);
+  #elif SECONDARY_SERIAL_PORT == 0
+    SerialFacade<HardwareSerial> MYSERIAL1(Serial);
+  #elif SECONDARY_SERIAL_PORT == 1
+    SerialFacade<HardwareSerial> MYSERIAL1(Serial1);
+  #elif SECONDARY_SERIAL_PORT == 2
+    SerialFacade<HardwareSerial> MYSERIAL1(Serial2);
+  #elif SECONDARY_SERIAL_PORT == 3
+    SerialFacade<HardwareSerial> MYSERIAL1(Serial3);
+  #endif
+#endif
+
+SerialFacadeBase* MYSERIAL[NUM_SERIAL] = {
+  &MYSERIAL0,
+  #ifdef SECONDARY_SERIAL_PORT
+    &MYSERIAL1
+  #endif
+};
+
 //u8glib required fucntions
 extern "C" void u8g_xMicroDelay(uint16_t val) {
   delayMicroseconds(val);
@@ -85,7 +118,7 @@ void HAL_adc_enable_channel(int ch) {
   pin_t pin = analogInputToDigitalPin(ch);
 
   if (pin == -1) {
-    MYSERIAL.printf("%sINVALID ANALOG PORT:%d\n", errormagic, ch);
+    SERIAL_PRINTF("%sINVALID ANALOG PORT:%d\n", errormagic, ch);
     kill(MSG_KILLED);
   }
 
@@ -115,7 +148,7 @@ void HAL_adc_enable_channel(int ch) {
 uint8_t active_adc = 0;
 void HAL_adc_start_conversion(const uint8_t ch) {
   if (analogInputToDigitalPin(ch) == -1) {
-    MYSERIAL.printf("HAL: HAL_adc_start_conversion: invalid channel %d\n", ch);
+    SERIAL_PRINTF("HAL: HAL_adc_start_conversion: invalid channel %d\n", ch);
     return;
   }
 

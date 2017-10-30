@@ -675,9 +675,14 @@ void setup() {
     disableStepperDrivers();
   #endif
 
-  MYSERIAL.begin(BAUDRATE);
-  uint32_t serial_connect_timeout = millis() + 1000;
-  while(!MYSERIAL && PENDING(millis(), serial_connect_timeout));
+  for (int i = 0; i < NUM_SERIAL; ++i)
+    MYSERIAL[i]->begin(BAUDRATE);
+
+  for (int i = 0; i < NUM_SERIAL; ++i) {
+    uint32_t serial_connect_timeout = millis() + 1000;
+    while(!MYSERIAL[i] && PENDING(millis(), serial_connect_timeout));
+  }
+
   SERIAL_PROTOCOLLNPGM("start");
   SERIAL_ECHO_START();
 

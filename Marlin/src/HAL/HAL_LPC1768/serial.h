@@ -97,13 +97,23 @@ public:
   void begin(int32_t baud) {
   }
 
+  int peek() {
+    uint8_t value;
+    if (receive_buffer.peek(&value))
+      return value;
+    else
+      return -1;
+  }
+
   char read() {
     return (char)receive_buffer.read();
   }
 
-  void write(char c) {
+  size_t write(char c) {
     _DBC(c); //Duplicate output over uart0
-    if(host_connected) transmit_buffer.write((uint8_t)c);
+    if (host_connected) 
+      return transmit_buffer.write((uint8_t)c);
+    return 0;
   }
 
   operator bool() {
@@ -123,7 +133,7 @@ public:
   }
 
   void flushTX(void){
-    if(host_connected) {
+    if (host_connected) {
       while(transmit_buffer.available());
     }
   }

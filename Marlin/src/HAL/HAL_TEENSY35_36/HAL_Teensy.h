@@ -36,6 +36,7 @@
 #include "watchdog_Teensy.h"
 
 #include "HAL_timers_Teensy.h"
+#include "src/HAL/SerialFacade.h"
 
 #include <stdint.h>
 
@@ -49,18 +50,6 @@
 #define IS_32BIT_TEENSY (defined(__MK64FX512__) || defined(__MK66FX1M0__))
 #define IS_TEENSY35 defined(__MK64FX512__)
 #define IS_TEENSY36 defined(__MK66FX1M0__)
-
-#if SERIAL_PORT == -1
-  #define MYSERIAL SerialUSB
-#elif SERIAL_PORT == 0
-  #define MYSERIAL Serial
-#elif SERIAL_PORT == 1
-  #define MYSERIAL Serial1
-#elif SERIAL_PORT == 2
-  #define MYSERIAL Serial2
-#elif SERIAL_PORT == 3
-  #define MYSERIAL Serial3
-#endif
 
 #define HAL_SERVO_LIB libServo
 
@@ -140,6 +129,9 @@ uint16_t HAL_adc_get_result(void);
   void HAL_enable_AdcFreerun(void);
   //void HAL_disable_AdcFreerun(uint8_t chan);
 */
+
+#define NUM_SERIAL 1
+extern SerialFacadeBase* MYSERIAL[NUM_SERIAL]; 
 
 #define GET_PIN_MAP_PIN(index) index
 #define GET_PIN_MAP_INDEX(pin) pin

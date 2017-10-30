@@ -33,8 +33,7 @@
 // Includes
 // --------------------------------------------------------------------------
 
-#include "../HAL.h"
-#include "../../core/macros.h"
+#include "../../inc/MarlinConfig.h"
 
 // --------------------------------------------------------------------------
 // Externals
@@ -57,6 +56,18 @@
 // --------------------------------------------------------------------------
 
 //uint8_t MCUSR;
+
+#ifdef USBCON
+  #if ENABLED(BLUETOOTH)
+    SerialFacade<HardwareSerial> MYSERIAL0(bluetoothSerial);
+  #else
+    SerialFacade<HardwareSerial> MYSERIAL0(Serial);
+  #endif // BLUETOOTH
+#else
+  SerialFacade<MarlinSerial> MYSERIAL0(customizedSerial);
+#endif
+
+SerialFacadeBase* MYSERIAL[NUM_SERIAL] = { &MYSERIAL0 };
 
 // --------------------------------------------------------------------------
 // Private Variables

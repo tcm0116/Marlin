@@ -36,22 +36,11 @@
 #include "fastio_Due.h"
 #include "watchdog_Due.h"
 #include "HAL_timers_Due.h"
+#include "src/HAL/SerialFacade.h"
 
 //
 // Defines
 //
-
-#if SERIAL_PORT == -1
-  #define MYSERIAL SerialUSB
-#elif SERIAL_PORT == 0
-  #define MYSERIAL customizedSerial
-#elif SERIAL_PORT == 1
-  #define MYSERIAL customizedSerial
-#elif SERIAL_PORT == 2
-  #define MYSERIAL customizedSerial
-#elif SERIAL_PORT == 3
-  #define MYSERIAL customizedSerial
-#endif
 
 #define _BV(bit) (1 << (bit))
 
@@ -154,6 +143,17 @@ uint16_t HAL_getAdcFreerun(uint8_t chan, bool wait_for_conversion = false);
 //uint16_t HAL_getAdcSuperSample(uint8_t chan);
 void HAL_enable_AdcFreerun(void);
 //void HAL_disable_AdcFreerun(uint8_t chan);
+
+/**
+ * Serial
+ */
+
+#define NUM_SERIAL 1
+extern SerialFacadeBase* MYSERIAL[NUM_SERIAL]; 
+
+/**
+ * Pin Map
+ */
 
 #define GET_PIN_MAP_PIN(index) index
 #define GET_PIN_MAP_INDEX(pin) pin

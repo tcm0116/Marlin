@@ -183,7 +183,7 @@ void ok_to_send() {
  */
 void flush_and_request_resend() {
   //char command_queue[cmd_queue_index_r][100]="Resend:";
-  MYSERIAL.flush();
+  MYSERIAL[0]->flush();
   SERIAL_PROTOCOLPGM(MSG_RESEND);
   SERIAL_PROTOCOLLN(gcode_LastN + 1);
   ok_to_send();
@@ -212,7 +212,7 @@ inline void get_serial_commands() {
   #if defined(NO_TIMEOUTS) && NO_TIMEOUTS > 0
     static millis_t last_command_time = 0;
     const millis_t ms = millis();
-    if (commands_in_queue == 0 && !MYSERIAL.available() && ELAPSED(ms, last_command_time + NO_TIMEOUTS)) {
+    if (commands_in_queue == 0 && !MYSERIAL[0].available() && ELAPSED(ms, last_command_time + NO_TIMEOUTS)) {
       SERIAL_ECHOLNPGM(MSG_WAIT);
       last_command_time = ms;
     }
@@ -222,7 +222,7 @@ inline void get_serial_commands() {
    * Loop while serial characters are incoming and the queue is not full
    */
   int c;
-  while (commands_in_queue < BUFSIZE && (c = MYSERIAL.read()) >= 0) {
+  while (commands_in_queue < BUFSIZE && (c = MYSERIAL[0]->read()) >= 0) {
     char serial_char = c;
 
     /**
@@ -324,7 +324,7 @@ inline void get_serial_commands() {
     }
     else if (serial_char == '\\') {  // Handle escapes
       // if we have one more character, copy it over
-      if ((c = MYSERIAL.read()) >= 0 && !serial_comment_mode)
+      if ((c = MYSERIAL[0]->read()) >= 0 && !serial_comment_mode)
         serial_line_buffer[serial_count++] = serial_char;
     }
     else { // it's not a newline, carriage return or escape char

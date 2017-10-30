@@ -47,6 +47,13 @@
 #include "watchdog_AVR.h"
 #include "math_AVR.h"
 
+#ifdef USBCON
+  #include "HardwareSerial.h"
+#else
+  #include "MarlinSerial.h"
+#endif
+#include "src/HAL/SerialFacade.h"
+
 // --------------------------------------------------------------------------
 // Defines
 // --------------------------------------------------------------------------
@@ -78,6 +85,9 @@ typedef int8_t pin_t;
 // --------------------------------------------------------------------------
 
 //extern uint8_t MCUSR;
+
+#define NUM_SERIAL 1
+extern SerialFacadeBase* MYSERIAL[NUM_SERIAL]; 
 
 // --------------------------------------------------------------------------
 // Public functions

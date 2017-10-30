@@ -29,11 +29,7 @@ const char echomagic[] PROGMEM = "echo:";
 
 
 void serialprintPGM(const char * str) {
-  #ifdef TARGET_LPC1768
-    MYSERIAL.print(str);
-  #else
-    while (char ch = pgm_read_byte(str++)) MYSERIAL.write(ch);
-  #endif
+  while (char ch = pgm_read_byte(str++)) SERIAL_CHAR(ch);
 }
 
 void serial_echopair_P(const char* s_P, const char *v)   { serialprintPGM(s_P); SERIAL_ECHO(v); }
@@ -45,7 +41,7 @@ void serial_echopair_P(const char* s_P, double v)        { serialprintPGM(s_P); 
 void serial_echopair_P(const char* s_P, unsigned int v)  { serialprintPGM(s_P); SERIAL_ECHO(v); }
 void serial_echopair_P(const char* s_P, unsigned long v) { serialprintPGM(s_P); SERIAL_ECHO(v); }
 
-void serial_spaces(uint8_t count) { count *= (PROPORTIONAL_FONT_RATIO); while (count--) MYSERIAL.write(' '); }
+void serial_spaces(uint8_t count) { count *= (PROPORTIONAL_FONT_RATIO); while (count--) SERIAL_CHAR(' '); }
 
 #if ENABLED(DEBUG_LEVELING_FEATURE)
 

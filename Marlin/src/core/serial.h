@@ -44,22 +44,6 @@ enum DebugFlags {
   DEBUG_ALL           = 0xFF
 };
 
-//todo: HAL: breaks encapsulation
-// For AVR only, define a serial interface based on configuration
-#ifdef __AVR__
-  #ifdef USBCON
-    #include "HardwareSerial.h"
-    #if ENABLED(BLUETOOTH)
-      #define MYSERIAL bluetoothSerial
-    #else
-      #define MYSERIAL Serial
-    #endif // BLUETOOTH
-  #else
-    #include "../HAL/HAL_AVR/MarlinSerial.h"
-    #define MYSERIAL customizedSerial
-  #endif
-#endif
-
 #ifdef ARDUINO_ARCH_SAM
   // To pull the Serial port definitions and overrides
   #include "../HAL/HAL_DUE/MarlinSerial_Due.h"
@@ -71,17 +55,17 @@ extern uint8_t marlin_debug_flags;
 extern const char echomagic[] PROGMEM;
 extern const char errormagic[] PROGMEM;
 
-#define SERIAL_CHAR(x) ((void)MYSERIAL.write(x))
+#define SERIAL_CHAR(x) do { for(int i = 0; i < NUM_SERIAL; ++i) MYSERIAL[i]->write(x); } while(0)
 #define SERIAL_EOL() SERIAL_CHAR('\n')
 
 #define SERIAL_PROTOCOLCHAR(x)              SERIAL_CHAR(x)
-#define SERIAL_PROTOCOL(x)                  (MYSERIAL.print(x))
-#define SERIAL_PROTOCOL_F(x,y)              (MYSERIAL.print(x,y))
+#define SERIAL_PROTOCOL(x)                  do { for(int i = 0; i < NUM_SERIAL; ++i) MYSERIAL[i]->print(x); } while(0)
+#define SERIAL_PROTOCOL_F(x,y)              do { for(int i = 0; i < NUM_SERIAL; ++i) MYSERIAL[i]->print(x,y); } while(0)
 #define SERIAL_PROTOCOLPGM(x)               (serialprintPGM(PSTR(x)))
-#define SERIAL_PROTOCOLLN(x)                do{ MYSERIAL.print(x); SERIAL_EOL(); }while(0)
+#define SERIAL_PROTOCOLLN(x)                do { for(int i = 0; i < NUM_SERIAL; ++i) MYSERIAL[i]->println(x); } while(0)
 #define SERIAL_PROTOCOLLNPGM(x)             (serialprintPGM(PSTR(x "\n")))
 #define SERIAL_PROTOCOLPAIR(pre, value)     (serial_echopair_P(PSTR(pre),(value)))
-#define SERIAL_PROTOCOLLNPAIR(pre, value)   do{ SERIAL_PROTOCOLPAIR(pre, value); SERIAL_EOL(); }while(0)
+#define SERIAL_PROTOCOLLNPAIR(pre, value)   do { SERIAL_PROTOCOLPAIR(pre, value); SERIAL_EOL(); } while(0)
 
 #define SERIAL_ECHO_START()            (serialprintPGM(echomagic))
 #define SERIAL_ECHO(x)                 SERIAL_PROTOCOL(x)
@@ -121,6 +105,14 @@ void serial_spaces(uint8_t count);
 #define SERIAL_ERROR_SP(C)    serial_spaces(C)
 #define SERIAL_PROTOCOL_SP(C) serial_spaces(C)
 
+#define SERIAL_PRINTF(fmt, args...) do { for(int i = 0; i < NUM_SERIAL; ++i) MYSERIAL[i]->printf(fmt, args); } while(0)
+
+#if TX_BUFFER_SIZE > 0
+  #define SERIAL_FLUSHTX() do { for(int i = 0; i < NUM_SERIAL; ++i) MYSERIAL[i]->flushTX(); } while(0)
+#else
+  #define SERIAL_FLUSHTX()
+#endif
+
 //
 // Functions for serial printing from PROGMEM. (Saves loads of SRAM.)
 //
@@ -132,8 +124,7 @@ void serialprintPGM(const char* str);
   #if HAS_ABL
     void print_xyz(const char* prefix, const char* suffix, const vector_3 &xyz);
   #endif
-  #define DEBUG_POS(SUFFIX,VAR) do { \
-    print_xyz(PSTR("  " STRINGIFY(VAR) "="), PSTR(" : " SUFFIX "\n"), VAR); }while(0)
+  #define DEBUG_POS(SUFFIX,VAR) do { print_xyz(PSTR("  " STRINGIFY(VAR) "="), PSTR(" : " SUFFIX "\n"), VAR); } while(0)
 #endif
 
 #endif // __SERIAL_H__
