@@ -10,7 +10,7 @@
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful,
+ * This program is distributed in xthe hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
@@ -20,8 +20,8 @@
  *
  */
 
-#ifndef HAL_SERIAL_H_
-#define HAL_SERIAL_H_
+#ifndef _HAL_SERIAL_H_
+#define _HAL_SERIAL_H_
 
 #include <stdarg.h>
 #include <stdio.h>
@@ -99,10 +99,7 @@ public:
 
   int peek() {
     uint8_t value;
-    if (receive_buffer.peek(&value))
-      return value;
-    else
-      return -1;
+    return receive_buffer.peek(&value) ? value : -1;
   }
 
   char read() {
@@ -177,7 +174,6 @@ public:
   void print(unsigned long value, int = 0) {
     printf("%lu" , value);
   }
-
   void print(float value, int round = 6) {
     printf("%f" , value);
   }
@@ -220,5 +216,4 @@ public:
   volatile bool host_connected;
 };
 
-
-#endif /* MARLIN_SRC_HAL_HAL_SERIAL_H_ */
+#endif // _HAL_SERIAL_H_
