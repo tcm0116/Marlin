@@ -107,10 +107,8 @@ public:
   }
 
   size_t write(char c) {
-    _DBC(c); //Duplicate output over uart0
-    if (host_connected) 
-      return transmit_buffer.write((uint8_t)c);
-    return 0;
+    _DBC(c); // Duplicate output over uart0
+    return host_connected ? transmit_buffer.write((uint8_t)c) : 0;
   }
 
   operator bool() {
