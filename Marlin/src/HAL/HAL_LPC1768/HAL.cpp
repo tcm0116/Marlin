@@ -62,7 +62,7 @@ SerialFacadeBase* MYSERIAL[NUM_SERIAL] = {
   #endif
 };
 
-//u8glib required fucntions
+// U8glib required functions
 extern "C" void u8g_xMicroDelay(uint16_t val) {
   delayMicroseconds(val);
 }
@@ -130,15 +130,15 @@ void HAL_adc_enable_channel(int ch) {
                               pin_port == 1                        ? 3 : 10;
 
   switch (pin_sel_register) {
-    case 1 :
+    case 1:
       LPC_PINCON->PINSEL1 &= ~(0x3 << pinsel_start_bit);
       LPC_PINCON->PINSEL1 |=  (0x1 << pinsel_start_bit);
       break;
-    case 3 :
+    case 3:
       LPC_PINCON->PINSEL3 &= ~(0x3 << pinsel_start_bit);
       LPC_PINCON->PINSEL3 |=  (0x3 << pinsel_start_bit);
       break;
-    case 0 :
+    case 0:
       LPC_PINCON->PINSEL0 &= ~(0x3 << pinsel_start_bit);
       LPC_PINCON->PINSEL0 |=  (0x2 << pinsel_start_bit);
       break;
