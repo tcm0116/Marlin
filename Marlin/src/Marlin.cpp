@@ -675,12 +675,12 @@ void setup() {
     disableStepperDrivers();
   #endif
 
-  for (int i = 0; i < NUM_SERIAL; ++i)
+  for (uint8_t i = 0; i < NUM_SERIAL; ++i)
     MYSERIAL[i]->begin(BAUDRATE);
 
-  for (int i = 0; i < NUM_SERIAL; ++i) {
-    uint32_t serial_connect_timeout = millis() + 1000;
-    while(!MYSERIAL[i] && PENDING(millis(), serial_connect_timeout));
+  for (uint8_t i = 0; i < NUM_SERIAL; ++i) {
+    const uint32_t serial_connect_timeout = millis() + 1000UL;
+    while(!MYSERIAL[i] && PENDING(millis(), serial_connect_timeout)) { /*nada*/ }
   }
 
   SERIAL_PROTOCOLLNPGM("start");
