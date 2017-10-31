@@ -57,17 +57,7 @@
 
 //uint8_t MCUSR;
 
-#ifdef USBCON
-  #if ENABLED(BLUETOOTH)
-    SerialFacade<HardwareSerial> MYSERIAL0(bluetoothSerial);
-  #else
-    SerialFacade<HardwareSerial> MYSERIAL0(Serial);
-  #endif // BLUETOOTH
-#else
-  SerialFacade<MarlinSerial> MYSERIAL0(customizedSerial);
-#endif
-
-SerialFacadeBase* MYSERIAL[NUM_SERIAL] = { &MYSERIAL0 };
+SerialFacade<SERIAL0_CLASS> MYSERIAL0(SERIAL0_REF);
 
 // --------------------------------------------------------------------------
 // Private Variables

@@ -69,19 +69,50 @@ extern "C" volatile uint32_t _millis;
   #error "SERIAL_PORT must be from -1 to 3"
 #endif
 
+#if SERIAL_PORT == -1
+  #define SERIAL0_CLASS HalSerial
+  #define SERIAL0_REF usb_serial
+#else
+  #define SERIAL1_CLASS HardwareSerial
+  #if SERIAL_PORT == 0
+    #define SERIAL0_REF Serial
+  #elif SERIAL_PORT == 1
+    #define SERIAL0_REF Serial1
+  #elif SERIAL_PORT == 2
+    #define SERIAL0_REF Serial2
+  #elif SERIAL_PORT == 3
+    #define SERIAL0_REF Serial3
+  #endif
+#endif
+
+extern SerialFacade<SERIAL0_CLASS> MYSERIAL0;
+
 #ifdef SECONDARY_SERIAL_PORT
   #if !WITHIN(SECONDARY_SERIAL_PORT, -1, 3)
     #error "SECONDARY_SERIAL_PORT must be from -1 to 3"
   #elif SECONDARY_SERIAL_PORT == SERIAL_PORT
     #error "SECONDARY_SERIAL_PORT must be different than SERIAL_PORT"
   #endif
-
   #define NUM_SERIAL 2
+  #if SECONDARY_SERIAL_PORT == -1
+    #define SERIAL1_CLASS HalSerial
+    #define SERIAL1_REF usb_serial
+  #else
+    #define SERIAL1_CLASS HalSerial
+    #if SECONDARY_SERIAL_PORT == 0
+      #define SERIAL1_REF Serial
+    #elif SECONDARY_SERIAL_PORT == 1
+      #define SERIAL1_REF Serial1
+    #elif SECONDARY_SERIAL_PORT == 2
+      #define SERIAL1_REF Serial2
+    #elif SECONDARY_SERIAL_PORT == 3
+      #define SERIAL1_REF Serial3
+    #endif
+  #endif
+  extern SerialFacade<SERIAL1_CLASS> MYSERIAL1;
 #else
   #define NUM_SERIAL 1
 #endif
-
-extern SerialFacadeBase* MYSERIAL[NUM_SERIAL];
 
 #define CRITICAL_SECTION_START  uint32_t primask = __get_PRIMASK(); __disable_irq();
 #define CRITICAL_SECTION_END    if (!primask) __enable_irq();

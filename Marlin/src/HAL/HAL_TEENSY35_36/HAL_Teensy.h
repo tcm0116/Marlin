@@ -131,7 +131,27 @@ uint16_t HAL_adc_get_result(void);
 */
 
 #define NUM_SERIAL 1
-extern SerialFacadeBase* MYSERIAL[NUM_SERIAL]; 
+
+#if SERIAL_PORT == -1
+  #define SERIAL0_CLASS usb_serial_class
+  #define SERIAL0_REF SerialUSB
+#else
+  #if SERIAL_PORT == 0
+    #define SERIAL0_CLASS usb_serial_class
+    #define SERIAL0_REF Serial
+  #else
+    #define SERIAL0_CLASS HardwareSerial
+    #if SERIAL_PORT == 1
+      #define SERIAL0_REF Serial1
+    #elif SERIAL_PORT == 2
+      #define SERIAL0_REF Serial2
+    #elif SERIAL_PORT == 3
+      #define SERIAL0_REF Serial3
+    #endif
+  #endif
+#endif
+
+extern SerialFacade<SERIAL0_CLASS> MYSERIAL0;
 
 #define GET_PIN_MAP_PIN(index) index
 #define GET_PIN_MAP_INDEX(pin) pin

@@ -27,19 +27,49 @@
 #ifndef _SERIALFACADE_H_
 #define _SERIALFACADE_H_
 
-class SerialFacadeBase {
-public:
-  virtual void begin(uint32_t baudrate) = 0;
-  virtual int peek() = 0;
-  virtual int read() = 0;
-  virtual void write(uint8_t send) = 0;
-  #if TX_BUFFER_SIZE > 0
-    virtual void flushTX() = 0;
-  #endif
-  virtual int available() = 0;
-  virtual void flush() = 0;
+#include "../core/macros.h"
 
-  virtual void printf(const char *format, ...) {
+template <typename T> class SerialFacade {
+private:
+  static T& serial;
+
+public:
+  SerialFacade(T& serial) : serial(serial) {}
+
+  static inline operator bool()                                         { return !!serial; }
+
+  static FORCE_INLINE void begin(uint32_t baudrate)                     { serial.begin(baudrate); }
+  static FORCE_INLINE int peek()                                        { return serial.peek(); }
+  static FORCE_INLINE int read()                                        { return serial.read(); }
+  static FORCE_INLINE void write(uint8_t send)                          { serial.write(send); }
+  #if TX_BUFFER_SIZE > 0
+    static FORCE_INLINE void flushTX()                                  { serial.flushTX(); }
+  #endif
+  static FORCE_INLINE int available()                                   { return serial.available(); }
+  static FORCE_INLINE void flush()                                      { serial.flush(); }
+
+  static FORCE_INLINE void print(const char value[])                    { serial.print(value); }
+  static FORCE_INLINE void print(char value, int base = 0)              { serial.print(value, base); }
+  static FORCE_INLINE void print(unsigned char value, int base = 0)     { serial.print(value, base); }
+  static FORCE_INLINE void print(int value, int base = 10)              { serial.print(value, base); }
+  static FORCE_INLINE void print(unsigned int value, int base = 10)     { serial.print(value, base); }
+  static FORCE_INLINE void print(long value, int base = 10)             { serial.print(value, base); }
+  static FORCE_INLINE void print(unsigned long value, int base = 10)    { serial.print(value, base); }
+  static FORCE_INLINE void print(float value, int round = 2)            { serial.print(value, round); }
+  static FORCE_INLINE void print(double value, int round = 2)           { serial.print(value, round); }
+
+  static FORCE_INLINE void println(const char value[])                  { serial.println(value); }
+  static FORCE_INLINE void println(char value, int base = 0)            { serial.println(value, base); }
+  static FORCE_INLINE void println(unsigned char value, int base = 0)   { serial.println(value, base); }
+  static FORCE_INLINE void println(int value, int base = 10)            { serial.println(value, base); }
+  static FORCE_INLINE void println(unsigned int value, int base = 10)   { serial.println(value, base); }
+  static FORCE_INLINE void println(long value, int base = 10)           { serial.println(value, base); }
+  static FORCE_INLINE void println(unsigned long value, int base = 10)  { serial.println(value, base); }
+  static FORCE_INLINE void println(float value, int round = 2)          { serial.println(value, round); }
+  static FORCE_INLINE void println(double value, int round = 2)         { serial.println(value, round); }
+  static FORCE_INLINE void println(void)                                { serial.println(); }
+
+  static inline void printf(const char *format, ...) {
     char RxBuffer[256];
     va_list vArgs;
     va_start(vArgs, format);
@@ -51,71 +81,6 @@ public:
     }
   }
 
-  virtual operator bool() = 0;
-
-  virtual void print(const char value[]) = 0;
-  virtual void print(char value, int base = 0) = 0;
-  virtual void print(unsigned char value, int base = 0) = 0;
-  virtual void print(int value, int base = 10) = 0;
-  virtual void print(unsigned int value, int base = 10) = 0;
-  virtual void print(long value, int base = 10) = 0;
-  virtual void print(unsigned long value, int base = 10) = 0;
-
-  virtual void print(float value, int round = 2) = 0;
-  virtual void print(double value, int round = 2) = 0;
-
-  virtual void println(const char value[]) = 0;
-  virtual void println(char value, int base = 0) = 0;
-  virtual void println(unsigned char value, int base = 0) = 0;
-  virtual void println(int value, int base = 10) = 0;
-  virtual void println(unsigned int value, int base = 10) = 0;
-  virtual void println(long value, int base = 10) = 0;
-  virtual void println(unsigned long value, int base = 10) = 0;
-  virtual void println(float value, int round = 2) = 0;
-  virtual void println(double value, int round = 2) = 0;
-  virtual void println(void) = 0;
-};
-
-template <typename T> class SerialFacade : public SerialFacadeBase {
-private:
-  T& serial;
-
-public:
-  SerialFacade(T& serial) : serial(serial)                 {}
-
-  virtual void begin(uint32_t baudrate)                     { serial.begin(baudrate); }
-  virtual int peek()                                        { return serial.peek(); }
-  virtual int read()                                        { return serial.read(); }
-  void write(uint8_t send)                                  { serial.write(send); }
-  #if TX_BUFFER_SIZE > 0
-    virtual void flushTX()                                  { serial.flushTX(); }
-  #endif
-  virtual int available()                                   { return serial.available(); }
-  virtual void flush()                                      { serial.flush(); }
-
-  virtual operator bool()                                   { return serial ? true : false; }
-
-  virtual void print(const char value[])                    { serial.print(value); }
-  virtual void print(char value, int base = 0)              { serial.print(value, base); }
-  virtual void print(unsigned char value, int base = 0)     { serial.print(value, base); }
-  virtual void print(int value, int base = 10)              { serial.print(value, base); }
-  virtual void print(unsigned int value, int base = 10)     { serial.print(value, base); }
-  virtual void print(long value, int base = 10)             { serial.print(value, base); }
-  virtual void print(unsigned long value, int base = 10)    { serial.print(value, base); }
-
-  virtual void print(float value, int round = 2)            { serial.print(value, round); }
-  virtual void print(double value, int round = 2)           { serial.print(value, round); }
-
-  virtual void println(const char value[])                  { serial.println(value); }
-  virtual void println(char value, int base = 0)            { serial.println(value, base); }
-  virtual void println(unsigned char value, int base = 0)   { serial.println(value, base); }
-  virtual void println(int value, int base = 10)            { serial.println(value, base); }
-  virtual void println(unsigned int value, int base = 10)   { serial.println(value, base); }
-  virtual void println(long value, int base = 10)           { serial.println(value, base); }
-  virtual void println(unsigned long value, int base = 10)  { serial.println(value, base); }
-  virtual void println(float value, int round = 2)          { serial.println(value, round); }
-  virtual void println(double value, int round = 2)         { serial.println(value, round); }
-  virtual void println(void)                                { serial.println(); }
 };
 
 #endif // _SERIALFACADE_H_

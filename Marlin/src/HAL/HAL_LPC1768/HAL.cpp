@@ -29,38 +29,11 @@ extern "C" {
 
 HalSerial usb_serial;
 
-#if SERIAL_PORT == -1
-  SerialFacade<HalSerial> MYSERIAL0(usb_serial);
-#elif SERIAL_PORT == 0
-  SerialFacade<HardwareSerial> MYSERIAL0(Serial);
-#elif SERIAL_PORT == 1
-  SerialFacade<HardwareSerial> MYSERIAL0(Serial1);
-#elif SERIAL_PORT == 2
-  SerialFacade<HardwareSerial> MYSERIAL0(Serial2);
-#elif SERIAL_PORT == 3
-  SerialFacade<HardwareSerial> MYSERIAL0(Serial3);
-#endif
+SerialFacade<SERIAL0_CLASS> MYSERIAL0(SERIAL0_REF);
 
 #ifdef SECONDARY_SERIAL_PORT
-  #if SECONDARY_SERIAL_PORT == -1
-    SerialFacade<HalSerial> MYSERIAL1(usb_serial);
-  #elif SECONDARY_SERIAL_PORT == 0
-    SerialFacade<HardwareSerial> MYSERIAL1(Serial);
-  #elif SECONDARY_SERIAL_PORT == 1
-    SerialFacade<HardwareSerial> MYSERIAL1(Serial1);
-  #elif SECONDARY_SERIAL_PORT == 2
-    SerialFacade<HardwareSerial> MYSERIAL1(Serial2);
-  #elif SECONDARY_SERIAL_PORT == 3
-    SerialFacade<HardwareSerial> MYSERIAL1(Serial3);
-  #endif
+  SerialFacade<SERIAL1_CLASS> MYSERIAL1(SERIAL1_REF);
 #endif
-
-SerialFacadeBase* MYSERIAL[NUM_SERIAL] = {
-  &MYSERIAL0,
-  #ifdef SECONDARY_SERIAL_PORT
-    &MYSERIAL1
-  #endif
-};
 
 // U8glib required functions
 extern "C" void u8g_xMicroDelay(uint16_t val) {

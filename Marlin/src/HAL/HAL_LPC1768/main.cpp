@@ -93,9 +93,14 @@ int main(void) {
     debug_frmwrk_init();
   #endif
 
-  for (int i = 0; i < NUM_SERIAL; ++i) MYSERIAL[i]->begin(BAUDRATE);
-  SERIAL_PRINTF("\n\nLPC1768 (%dMhz) UART0 Initialised\n", SystemCoreClock / 1000000);
-  SERIAL_FLUSHTX();
+  #if NUM_SERIAL > 0
+    MYSERIAL0.begin(BAUDRATE);
+    #if NUM_SERIAL > 1
+      MYSERIAL1.begin(BAUDRATE);
+    #endif
+    SERIAL_PRINTF("\n\nLPC1768 (%dMhz) UART0 Initialised\n", SystemCoreClock / 1000000);
+    SERIAL_FLUSHTX();
+  #endif
 
   HAL_timer_init();
 

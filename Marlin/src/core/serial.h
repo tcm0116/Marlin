@@ -55,14 +55,33 @@ extern uint8_t marlin_debug_flags;
 extern const char echomagic[] PROGMEM;
 extern const char errormagic[] PROGMEM;
 
-#define SERIAL_CHAR(x) do { for(int i = 0; i < NUM_SERIAL; ++i) MYSERIAL[i]->write(x); } while(0)
+#if TX_BUFFER_SIZE < 1
+  #define SERIAL_FLUSHTX()
+#endif
+
+#ifdef SECONDARY_SERIAL_PORT
+  #define SERIAL_CHAR(x)              do{ MYSERIAL0.write(x); MYSERIAL1.write(x); }while(0)
+  #define SERIAL_PROTOCOL(x)          do{ MYSERIAL0.print(x); MYSERIAL1.print(x); }while(0)
+  #define SERIAL_PROTOCOL_F(x,y)      do{ MYSERIAL0.print(x,y); MYSERIAL1.print(x,y); }while(0)
+  #define SERIAL_PROTOCOLLN(x)        do{ MYSERIAL0.println(x); MYSERIAL1.println(x); }while(0)
+  #define SERIAL_PRINTF(fmt, args...) do{ MYSERIAL0.printf(fmt, args); MYSERIAL1.printf(fmt, args); }while(0)
+  #if TX_BUFFER_SIZE > 0
+    #define SERIAL_FLUSHTX()          do{ MYSERIAL0.flushTX(); MYSERIAL1.flushTX(); }while(0)
+  #endif
+#else
+  #define SERIAL_CHAR(x)              MYSERIAL0.write(x)
+  #define SERIAL_PROTOCOL(x)          MYSERIAL0.print(x);
+  #define SERIAL_PROTOCOL_F(x,y)      MYSERIAL0.print(x,y);
+  #define SERIAL_PROTOCOLLN(x)        MYSERIAL0.println(x);
+  #define SERIAL_PRINTF(fmt, args...) MYSERIAL0.printf(fmt, args);
+  #if TX_BUFFER_SIZE > 0
+    #define SERIAL_FLUSHTX()          MYSERIAL0.flushTX();
+  #endif
+#endif
 #define SERIAL_EOL() SERIAL_CHAR('\n')
 
 #define SERIAL_PROTOCOLCHAR(x)              SERIAL_CHAR(x)
-#define SERIAL_PROTOCOL(x)                  do { for(int i = 0; i < NUM_SERIAL; ++i) MYSERIAL[i]->print(x); } while(0)
-#define SERIAL_PROTOCOL_F(x,y)              do { for(int i = 0; i < NUM_SERIAL; ++i) MYSERIAL[i]->print(x,y); } while(0)
 #define SERIAL_PROTOCOLPGM(x)               (serialprintPGM(PSTR(x)))
-#define SERIAL_PROTOCOLLN(x)                do { for(int i = 0; i < NUM_SERIAL; ++i) MYSERIAL[i]->println(x); } while(0)
 #define SERIAL_PROTOCOLLNPGM(x)             (serialprintPGM(PSTR(x "\n")))
 #define SERIAL_PROTOCOLPAIR(pre, value)     (serial_echopair_P(PSTR(pre),(value)))
 #define SERIAL_PROTOCOLLNPAIR(pre, value)   do { SERIAL_PROTOCOLPAIR(pre, value); SERIAL_EOL(); } while(0)
@@ -104,14 +123,6 @@ void serial_spaces(uint8_t count);
 #define SERIAL_ECHO_SP(C)     serial_spaces(C)
 #define SERIAL_ERROR_SP(C)    serial_spaces(C)
 #define SERIAL_PROTOCOL_SP(C) serial_spaces(C)
-
-#define SERIAL_PRINTF(fmt, args...) do { for(int i = 0; i < NUM_SERIAL; ++i) MYSERIAL[i]->printf(fmt, args); } while(0)
-
-#if TX_BUFFER_SIZE > 0
-  #define SERIAL_FLUSHTX() do { for(int i = 0; i < NUM_SERIAL; ++i) MYSERIAL[i]->flushTX(); } while(0)
-#else
-  #define SERIAL_FLUSHTX()
-#endif
 
 //
 // Functions for serial printing from PROGMEM. (Saves loads of SRAM.)

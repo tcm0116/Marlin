@@ -94,18 +94,6 @@ void HAL_adc_start_conversion(const uint8_t adc_pin) { ADC0_SC1A = pin2sc1a[adc_
 
 uint16_t HAL_adc_get_result(void) { return ADC0_RA; }
 
-#if SERIAL_PORT == -1
-  SerialFacade<usb_serial_class> MYSERIAL0(SerialUSB);
-#elif SERIAL_PORT == 0
-  SerialFacade<usb_serial_class> MYSERIAL0(Serial);
-#elif SERIAL_PORT == 1
-  SerialFacade<HardwareSerial> MYSERIAL0(Serial1);
-#elif SERIAL_PORT == 2
-  SerialFacade<HardwareSerial> MYSERIAL0(Serial2);
-#elif SERIAL_PORT == 3
-  SerialFacade<HardwareSerial> MYSERIAL0(Serial3);
-#endif
-
-SerialFacadeBase* MYSERIAL[NUM_SERIAL] = { &MYSERIAL0 };
+SerialFacade<SERIAL0_CLASS> MYSERIAL0(SERIAL0_REF);
 
 #endif // __MK64FX512__ || __MK66FX1M0__

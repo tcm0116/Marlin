@@ -149,7 +149,19 @@ void HAL_enable_AdcFreerun(void);
  */
 
 #define NUM_SERIAL 1
-extern SerialFacadeBase* MYSERIAL[NUM_SERIAL]; 
+
+#undef SERIAL_PORT
+#define SERIAL_PORT -1
+
+#if SERIAL_PORT == -1
+  #define SERIAL0_CLASS Serial_
+  #define SERIAL0_REF SerialUSB
+#else
+  #define SERIAL0_CLASS MarlinSerial
+  #define SERIAL0_REF customizedSerial
+#endif
+
+extern SerialFacade<SERIAL0_CLASS> MYSERIAL0;
 
 /**
  * Pin Map

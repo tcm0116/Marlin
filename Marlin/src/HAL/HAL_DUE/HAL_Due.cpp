@@ -57,22 +57,7 @@
 
 uint16_t HAL_adc_result;
 
-#undef SERIAL_PORT
-#define SERIAL_PORT -1
-
-#if SERIAL_PORT == -1
-  SerialFacade<Serial_> MYSERIAL0(SerialUSB);
-#elif SERIAL_PORT == 0
-  SerialFacade<MarlinSerial> MYSERIAL0(customizedSerial);
-#elif SERIAL_PORT == 1
-  SerialFacade<MarlinSerial> MYSERIAL0(customizedSerial);
-#elif SERIAL_PORT == 2
-  SerialFacade<MarlinSerial> MYSERIAL0(customizedSerial);
-#elif SERIAL_PORT == 3
-  SerialFacade<MarlinSerial> MYSERIAL0(customizedSerial);
-#endif
-
-SerialFacadeBase* MYSERIAL[NUM_SERIAL] = { &MYSERIAL0 };
+SerialFacade<SERIAL0_CLASS> MYSERIAL0(SERIAL0_REF);
 
 // --------------------------------------------------------------------------
 // Private Variables

@@ -87,7 +87,20 @@ typedef int8_t pin_t;
 //extern uint8_t MCUSR;
 
 #define NUM_SERIAL 1
-extern SerialFacadeBase* MYSERIAL[NUM_SERIAL]; 
+
+#ifdef USBCON
+  #define SERIAL0_CLASS HardwareSerial
+  #if ENABLED(BLUETOOTH)
+    #define SERIAL0_REF bluetoothSerial
+  #else
+    #define SERIAL0_REF Serial
+  #endif
+#else
+  #define SERIAL0_CLASS MarlinSerial
+  #define SERIAL0_REF customizedSerial
+#endif
+
+extern SerialFacade<SERIAL0_CLASS> MYSERIAL0;
 
 // --------------------------------------------------------------------------
 // Public functions
