@@ -20,8 +20,8 @@
  *
  */
 
-#ifndef HAL_SERIAL_H_
-#define HAL_SERIAL_H_
+#ifndef _HAL_SERIAL_H_
+#define _HAL_SERIAL_H_
 
 #include <stdarg.h>
 #include <stdio.h>
@@ -97,13 +97,17 @@ public:
   void begin(int32_t baud) {
   }
 
+  int peek() {
+    uint8_t value;
+    return receive_buffer.peek(&value) ? value : -1;
+  }
+
   char read() {
     return (char)receive_buffer.read();
   }
 
-  void write(char c) {
-    _DBC(c); //Duplicate output over uart0
-    if(host_connected) transmit_buffer.write((uint8_t)c);
+  size_t write(char c) {
+    return host_connected ? transmit_buffer.write((uint8_t)c) : 0;
   }
 
   operator bool() {
@@ -123,7 +127,7 @@ public:
   }
 
   void flushTX(void){
-    if(host_connected) {
+    if (host_connected) {
       while(transmit_buffer.available());
     }
   }
@@ -135,7 +139,6 @@ public:
     int length = vsnprintf((char *) buffer, 256, (char const *) format, vArgs);
     va_end(vArgs);
     if (length > 0 && length < 256) {
-      _DBG(buffer); //Duplicate output over uart0
       if (host_connected) {
         for (int i = 0; i < length;) {
           if (transmit_buffer.write(buffer[i])) {
@@ -167,7 +170,6 @@ public:
   void print(unsigned long value, int = 0) {
     printf("%lu" , value);
   }
-
   void print(float value, int round = 6) {
     printf("%f" , value);
   }
@@ -210,5 +212,4 @@ public:
   volatile bool host_connected;
 };
 
-
-#endif /* MARLIN_SRC_HAL_HAL_SERIAL_H_ */
+#endif // _HAL_SERIAL_H_

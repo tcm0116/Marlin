@@ -156,10 +156,7 @@
         }
         idle();
         if (map_type == 1 && i < GRID_MAX_POINTS_X - 1) SERIAL_CHAR(',');
-
-        #if TX_BUFFER_SIZE > 0
-          MYSERIAL.flushTX();
-        #endif
+        SERIAL_FLUSHTX();
         safe_delay(15);
         if (map_type == 0) {
           SERIAL_CHAR(is_current ? ']' : ' ');
