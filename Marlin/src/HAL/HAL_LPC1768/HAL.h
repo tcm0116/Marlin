@@ -52,7 +52,7 @@ extern "C" volatile uint32_t _millis;
 #define B01 1
 #define B10 2
 
-#include "arduino.h"
+#include "Arduino.h"
 #include "pinmapping.h"
 #include "fastio.h"
 #include "watchdog.h"

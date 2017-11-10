@@ -29,7 +29,7 @@
 #ifndef _HAL_H
 #define _HAL_H
 
-#include "SPI.h"
+#include "HAL_SPI.h"
 
 #ifdef __AVR__
   #include "HAL_AVR/HAL_AVR.h"

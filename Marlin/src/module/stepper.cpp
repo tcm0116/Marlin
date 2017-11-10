@@ -70,7 +70,7 @@
 #endif
 
 #if HAS_DIGIPOTSS
-  #include <SPI.h>
+  #include <HAL_SPI.h>
 #endif
 
 Stepper stepper; // Singleton

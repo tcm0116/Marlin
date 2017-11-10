@@ -35,7 +35,7 @@
 #define _FASTIO_LPC1768_H
 
 #include <LPC17xx.h>
-#include "arduino.h"
+#include "Arduino.h"
 #include "pinmapping.h"
 
 bool useable_hardware_PWM(uint8_t pin);

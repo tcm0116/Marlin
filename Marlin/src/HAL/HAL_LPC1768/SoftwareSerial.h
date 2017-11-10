@@ -32,7 +32,7 @@ http://arduiniana.org.
 #ifndef SOFTWARESERIAL_H
 #define SOFTWARESERIAL_H
 
-#include "arduino.h"
+#include "Arduino.h"
 #include <stdint.h>
 //#include "serial.h"
 #include <Stream.h>

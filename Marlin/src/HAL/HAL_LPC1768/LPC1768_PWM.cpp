@@ -64,7 +64,7 @@
 #ifdef TARGET_LPC1768
 #include <lpc17xx_pinsel.h>
 #include "LPC1768_PWM.h"
-#include "arduino.h"
+#include "Arduino.h"
 
 #define NUM_PWMS 6
 

@@ -21,14 +21,12 @@
  */
 
 /**
- * HAL/SPI.h
+ * HAL/HAL_SPI.h
  * Core Marlin definitions for SPI, implemented in the HALs
  */
 
-#ifndef _SPI_H_
-#define _SPI_H_
-
-//#include "../inc/MarlinConfig.h"
+#ifndef _HAL_SPI_H_
+#define _HAL_SPI_H_
 
 #include <stdint.h>
 
@@ -75,4 +73,4 @@ void spiSendBlock(uint8_t token, const uint8_t* buf);
 
 #endif // SPI_FULL_SPEED
 
-#endif // _SPI_H_
+#endif // _HAL_SPI_H_

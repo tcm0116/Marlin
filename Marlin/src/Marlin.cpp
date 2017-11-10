@@ -79,7 +79,7 @@
 #endif
 
 #if HAS_DIGIPOTSS
-  #include <SPI.h>
+  #include <HAL_SPI.h>
 #endif
 
 #if ENABLED(DAC_STEPPER_CURRENT)

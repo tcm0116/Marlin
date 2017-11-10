@@ -48,7 +48,7 @@
 
 // TMC26X drivers have STEP/DIR on normal pins, but ENABLE via SPI
 #if ENABLED(HAVE_TMCDRIVER)
-  #include <SPI.h>
+  #include <HAL_SPI.h>
   #include <TMC26XStepper.h>
   void tmc_init();
 #endif
@@ -60,7 +60,7 @@
 
 // L6470 has STEP on normal pins, but DIR/ENABLE via SPI
 #if ENABLED(HAVE_L6470DRIVER)
-  #include <SPI.h>
+  #include <HAL_SPI.h>
   #include <L6470.h>
   void L6470_init();
 #endif

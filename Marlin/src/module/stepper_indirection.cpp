@@ -40,7 +40,7 @@
 //
 #if ENABLED(HAVE_TMCDRIVER)
 
-  #include <SPI.h>
+  #include <HAL_SPI.h>
   #include <TMC26XStepper.h>
 
   #define _TMC_DEFINE(ST) TMC26XStepper stepper##ST(200, ST##_ENABLE_PIN, ST##_STEP_PIN, ST##_DIR_PIN, ST##_MAX_CURRENT, ST##_SENSE_RESISTOR)
@@ -127,11 +127,11 @@
 //
 #if ENABLED(HAVE_TMC2130)
 
-  #include <SPI.h>
+  #include <HAL_SPI.h>
   #include <TMC2130Stepper.h>
   #include "../core/enum.h"
 
-  #define _TMC2130_DEFINE(ST) TMC2130Stepper stepper##ST(ST##_ENABLE_PIN, ST##_DIR_PIN, ST##_STEP_PIN, ST##_CS_PIN)
+  #define _TMC2130_DEFINE(ST) TMC2130Stepper stepper##ST((uint8_t)ST##_ENABLE_PIN, (uint8_t)ST##_DIR_PIN, (uint8_t)ST##_STEP_PIN, (uint8_t)ST##_CS_PIN)
 
   // Stepper objects of TMC2130 steppers used
   #if ENABLED(X_IS_TMC2130)
@@ -250,7 +250,7 @@
 //
 #if ENABLED(HAVE_L6470DRIVER)
 
-  #include <SPI.h>
+  #include <HAL_SPI.h>
   #include <L6470.h>
 
   #define _L6470_DEFINE(ST) L6470 stepper##ST(ST##_ENABLE_PIN)

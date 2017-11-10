@@ -38,7 +38,7 @@ http://arduiniana.org.
 #include "../../inc/MarlinConfig.h"
 #include <stdint.h>
 #include <stdarg.h>
-#include "arduino.h"
+#include "Arduino.h"
 #include "pinmapping.h"
 #include "fastio.h"
 #include "SoftwareSerial.h"

@@ -20,30 +20,11 @@
  *
  */
 
-#ifndef MARLIN_CONFIG_H
-#define MARLIN_CONFIG_H
+#ifdef TARGET_LPC1768
 
-#include "../core/boards.h"
-#include "../core/macros.h"
-#include "Version.h"
-#include "../HAL/HAL_SPI.h"
-#include "../../Configuration.h"
-#include "Conditionals_LCD.h"
-#include "../../Configuration_adv.h"
-#include "Conditionals_adv.h"
-#include "../HAL/HAL.h"
-#include "../pins/pins.h"
-#if defined(__AVR__) && !defined(USBCON)
-  #define HardwareSerial_h // trick to disable the standard HWserial
-#endif
-#include "Conditionals_post.h"
-#include "SanityCheck.h"
+#include "SPI.h"
 
-// Include all core headers
-#include "../core/enum.h"
-#include "../core/language.h"
-#include "../core/types.h"
-#include "../core/utility.h"
-#include "../core/serial.h"
+SPIClass SPI;
+SPISettings SPIClass::settings;
 
-#endif // MARLIN_CONFIG_H
+#endif // TARGET_LPC1768

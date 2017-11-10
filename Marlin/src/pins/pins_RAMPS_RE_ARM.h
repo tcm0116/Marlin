@@ -70,22 +70,27 @@
 #define X_STEP_PIN         P2_1   // (54)
 #define X_DIR_PIN          P0_11  // (55)
 #define X_ENABLE_PIN       P0_10  // (38)
+#define X_CS_PIN           P1_23  // (53)
 
 #define Y_STEP_PIN         P2_2   // (60)
 #define Y_DIR_PIN          P0_20  // (61)
 #define Y_ENABLE_PIN       P0_19  // (56)
+#define Y_CS_PIN           P1_31  // (49)
 
 #define Z_STEP_PIN         P2_3   // (46)
 #define Z_DIR_PIN          P0_22  // (48)
 #define Z_ENABLE_PIN       P0_21  // (62)
+#define Z_CS_PIN           P0_3   // (40)
 
 #define E0_STEP_PIN        P2_0   // (26)
 #define E0_DIR_PIN         P0_5   // (28)
 #define E0_ENABLE_PIN      P0_4   // (24)
+#define E0_CS_PIN          P0_2   // (42)
 
 #define E1_STEP_PIN        P2_8   // (36)
 #define E1_DIR_PIN         P2_13  // (34)
 #define E1_ENABLE_PIN      P4_29  // (30)
+#define E1_CS_PIN          P0_26  // (44)
 
 #define E2_STEP_PIN        P2_8   // (36)
 #define E2_DIR_PIN         P2_13  // (34)
