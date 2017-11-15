@@ -58,8 +58,6 @@
   #define BOARD_NAME "RAMPS 1.4"
 #endif
 
-#define LARGE_FLASH true
-
 //
 // Servos
 //
@@ -195,7 +193,7 @@
 #endif
 
 #ifndef FAN_PIN
-  #define FAN_PIN 4      // IO pin. Buffer needed
+  #define FAN_PIN           4   // IO pin. Buffer needed
 #endif
 
 //

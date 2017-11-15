@@ -41,12 +41,7 @@
 
 #define EXTRUSION_MULTIPLIER 1.0
 #define RETRACTION_MULTIPLIER 1.0
-#define NOZZLE 0.4
-#define FILAMENT 1.75
-#define LAYER_HEIGHT 0.2
 #define PRIME_LENGTH 10.0
-#define BED_TEMP 60.0
-#define HOTEND_TEMP 205.0
 #define OOZE_AMOUNT 0.3
 
 #define SIZE_OF_INTERSECTION_CIRCLES 5
@@ -623,12 +618,12 @@ bool unified_bed_leveling::parse_G26_parameters() {
 
   g26_extrusion_multiplier  = EXTRUSION_MULTIPLIER;
   g26_retraction_multiplier = RETRACTION_MULTIPLIER;
-  g26_nozzle                = NOZZLE;
-  g26_filament_diameter     = FILAMENT;
-  g26_layer_height          = LAYER_HEIGHT;
+  g26_nozzle                = MESH_TEST_NOZZLE_SIZE;
+  g26_filament_diameter     = DEFAULT_NOMINAL_FILAMENT_DIA;
+  g26_layer_height          = MESH_TEST_LAYER_HEIGHT;
   g26_prime_length          = PRIME_LENGTH;
-  g26_bed_temp              = BED_TEMP;
-  g26_hotend_temp           = HOTEND_TEMP;
+  g26_bed_temp              = MESH_TEST_BED_TEMP;
+  g26_hotend_temp           = MESH_TEST_HOTEND_TEMP;
   g26_prime_flag            = 0;
 
   g26_ooze_amount           = parser.linearval('O', OOZE_AMOUNT);
@@ -735,7 +730,7 @@ bool unified_bed_leveling::parse_G26_parameters() {
   }
 
   g26_x_pos = parser.seenval('X') ? RAW_X_POSITION(parser.value_linear_units()) : current_position[X_AXIS];
-  g26_y_pos = parser.seenval('Y') ? RAW_X_POSITION(parser.value_linear_units()) : current_position[Y_AXIS];
+  g26_y_pos = parser.seenval('Y') ? RAW_Y_POSITION(parser.value_linear_units()) : current_position[Y_AXIS];
   if (!position_is_reachable(g26_x_pos, g26_y_pos)) {
     SERIAL_PROTOCOLLNPGM("?Specified X,Y coordinate out of bounds.");
     return UBL_ERR;

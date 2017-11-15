@@ -33,8 +33,8 @@
 
 #include "SdFatUtil.h"
 
-//------------------------------------------------------------------------------
-/** Amount of free RAM
+/**
+ * Amount of free RAM
  * \return The number of free bytes.
  */
 #ifdef __arm__
@@ -46,7 +46,8 @@ int SdFatUtil::FreeRam() {
 #else  // __arm__
 extern char* __brkval;
 extern char __bss_end;
-/** Amount of free RAM
+/**
+ * Amount of free RAM
  * \return The number of free bytes.
  */
 int SdFatUtil::FreeRam() {

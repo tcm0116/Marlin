@@ -1082,7 +1082,7 @@
 // Updated G92 behavior shifts the workspace
 #define HAS_POSITION_SHIFT DISABLED(NO_WORKSPACE_OFFSETS)
 // The home offset also shifts the coordinate space
-#define HAS_HOME_OFFSET (DISABLED(NO_WORKSPACE_OFFSETS) || ENABLED(DELTA))
+#define HAS_HOME_OFFSET (DISABLED(NO_WORKSPACE_OFFSETS) && DISABLED(DELTA))
 // Either offset yields extra calculations on all moves
 #define HAS_WORKSPACE_OFFSET (HAS_POSITION_SHIFT || HAS_HOME_OFFSET)
 // M206 doesn't apply to DELTA
@@ -1113,11 +1113,6 @@
 
 // Add commands that need sub-codes to this list
 #define USE_GCODE_SUBCODES ENABLED(G38_PROBE_TARGET) || ENABLED(CNC_COORDINATE_SYSTEMS)
-
-// MESH_BED_LEVELING overrides PROBE_MANUALLY
-#if ENABLED(MESH_BED_LEVELING)
-  #undef PROBE_MANUALLY
-#endif
 
 // Parking Extruder
 #if ENABLED(PARKING_EXTRUDER)
@@ -1155,6 +1150,7 @@
   #undef min
   #define min(a,b) ((a)<(b)?(a):(b))
 
+  #undef NOT_A_PIN    // Override Teensyduino legacy CapSense define work-around
   #define NOT_A_PIN 0 // For PINS_DEBUGGING
 #endif
 
