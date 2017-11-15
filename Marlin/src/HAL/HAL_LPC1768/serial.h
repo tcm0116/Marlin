@@ -44,7 +44,7 @@ public:
     index_write = 0;
   }
   bool peek(T *value) volatile {
-    if(value == 0 || available() == 0)
+    if (value == 0 || available() == 0)
       return false;
     *value = buffer[buffer_mask & index_read];
     return true;
@@ -55,15 +55,15 @@ public:
   uint32_t free() volatile {
     return buffer_size - available();
   }
-  T read() volatile {
-    if((buffer_mask & index_read) == (buffer_mask & index_write)) return T(-1);
+  int read() volatile {
+    if ((buffer_mask & index_read) == (buffer_mask & index_write)) return -1;
     T val = buffer[buffer_mask & index_read];
     ++index_read;
     return val;
   }
-  bool write( T value) volatile {
+  bool write(T value) volatile {
     uint32_t next_head = buffer_mask & (index_write + 1);
-    if(next_head != index_read) {
+    if (next_head != index_read) {
       buffer[buffer_mask & index_write] = value;
       index_write = next_head;
       return true;
@@ -102,8 +102,8 @@ public:
     return receive_buffer.peek(&value) ? value : -1;
   }
 
-  char read() {
-    return (char)receive_buffer.read();
+  int read() {
+    return receive_buffer.read();
   }
 
   size_t write(char c) {

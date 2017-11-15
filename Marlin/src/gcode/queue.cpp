@@ -62,7 +62,7 @@ char command_queue[BUFSIZE][MAX_CMD_SIZE];
  * The port that the command was received on
  */
 #if NUM_SERIAL > 1
-  static int16_t command_queue_port[BUFSIZE];
+  int16_t command_queue_port[BUFSIZE];
 #endif
 
 /**
@@ -323,7 +323,7 @@ inline void get_serial_commands() {
               case 1:
               case 2:
               case 3:
-                SERIAL_ERRORLNPGM(MSG_ERR_STOPPED);
+                SERIAL_ERRORLNPGM_P(i, MSG_ERR_STOPPED);
                 LCD_MESSAGEPGM(MSG_STOPPED);
                 break;
             }

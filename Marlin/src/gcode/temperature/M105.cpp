@@ -23,18 +23,26 @@
 #include "../gcode.h"
 #include "../../module/temperature.h"
 
+#if NUM_SERIAL > 1
+  #include "../../gcode/queue.h"
+#endif
+
 /**
  * M105: Read hot end and bed temperature
  */
 void GcodeSuite::M105() {
   if (get_target_extruder_from_command()) return;
 
+  #if NUM_SERIAL > 1
+    const int16_t port = command_queue_port[cmd_queue_index_r];
+  #endif
+
   #if HAS_TEMP_HOTEND || HAS_TEMP_BED
-    SERIAL_PROTOCOLPGM(MSG_OK);
+    SERIAL_PROTOCOLPGM_P(port, MSG_OK);
     thermalManager.print_heaterstates();
   #else // !HAS_TEMP_HOTEND && !HAS_TEMP_BED
-    SERIAL_ERROR_START();
-    SERIAL_ERRORLNPGM(MSG_ERR_NO_THERMISTORS);
+    SERIAL_ERROR_START_P(port);
+    SERIAL_ERRORLNPGM_P(port, MSG_ERR_NO_THERMISTORS);
   #endif
 
   SERIAL_EOL();
