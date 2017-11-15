@@ -39,11 +39,15 @@ void GcodeSuite::M105() {
 
   #if HAS_TEMP_HOTEND || HAS_TEMP_BED
     SERIAL_PROTOCOLPGM_P(port, MSG_OK);
-    thermalManager.print_heaterstates();
+    thermalManager.print_heaterstates(
+      #if NUM_SERIAL > 1
+        port
+      #endif
+    );
   #else // !HAS_TEMP_HOTEND && !HAS_TEMP_BED
     SERIAL_ERROR_START_P(port);
     SERIAL_ERRORLNPGM_P(port, MSG_ERR_NO_THERMISTORS);
   #endif
 
-  SERIAL_EOL();
+  SERIAL_EOL_P(port);
 }

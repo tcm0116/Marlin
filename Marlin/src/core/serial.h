@@ -61,23 +61,23 @@ extern const char errormagic[] PROGMEM;
 #endif
 
 #if NUM_SERIAL > 1
-  #define SERIAL_CHAR_P(p,x)          (p == 0 ? MYSERIAL0.write(x) : MYSERIAL1.write(x))
-  #define SERIAL_PROTOCOL_P(p,x)      (p == 0 ? MYSERIAL0.print(x) : MYSERIAL1.print(x))
-  #define SERIAL_PROTOCOL_F_P(p,x,y)  (p == 0 ? MYSERIAL0.print(x,y) : MYSERIAL1.print(x,y))
-  #define SERIAL_PROTOCOLLN_P(p,x)    (p == 0 ? MYSERIAL0.println(x) : MYSERIAL1.println(x))
-  #define SERIAL_PRINTF_P(p,args...)  (p == 0 ? MYSERIAL0.printf(args) : MYSERIAL1.printf(args))
+  #define SERIAL_CHAR_P(p,x)          (WITHIN(p, 0, NUM_SERIAL-1) ? (p == 0 ? MYSERIAL0.write(x) : MYSERIAL1.write(x)) : SERIAL_CHAR(x))
+  #define SERIAL_PROTOCOL_P(p,x)      (WITHIN(p, 0, NUM_SERIAL-1) ? (p == 0 ? MYSERIAL0.print(x) : MYSERIAL1.print(x)) : SERIAL_PROTOCOL(x))
+  #define SERIAL_PROTOCOL_F_P(p,x,y)  (WITHIN(p, 0, NUM_SERIAL-1) ? (p == 0 ? MYSERIAL0.print(x,y) : MYSERIAL1.print(x,y)) : SERIAL_PROTOCOL_F(x,y))
+  #define SERIAL_PROTOCOLLN_P(p,x)    (WITHIN(p, 0, NUM_SERIAL-1) ? (p == 0 ? MYSERIAL0.println(x) : MYSERIAL1.println(x)) : SERIAL_PROTOCOLLN(x))
+  #define SERIAL_PRINTF_P(p,args...)  (WITHIN(p, 0, NUM_SERIAL-1) ? (p == 0 ? MYSERIAL0.printf(args) : MYSERIAL1.printf(args)) : SERIAL_PRINTF(args))
 
-  #define SERIAL_CHAR(x)              do { MYSERIAL0.write(x); MYSERIAL1.write(x); } while(0)
-  #define SERIAL_PROTOCOL(x)          do { MYSERIAL0.print(x); MYSERIAL1.print(x); } while(0)
-  #define SERIAL_PROTOCOL_F(x,y)      do { MYSERIAL0.print(x,y); MYSERIAL1.print(x,y); } while(0)
-  #define SERIAL_PROTOCOLLN(x)        do { MYSERIAL0.println(x); MYSERIAL1.println(x); } while(0)
-  #define SERIAL_PRINTF(args...)      do { MYSERIAL0.printf(args); MYSERIAL1.printf(args); } while(0)
+  #define SERIAL_CHAR(x)              (MYSERIAL0.write(x), MYSERIAL1.write(x))
+  #define SERIAL_PROTOCOL(x)          (MYSERIAL0.print(x), MYSERIAL1.print(x))
+  #define SERIAL_PROTOCOL_F(x,y)      (MYSERIAL0.print(x,y), MYSERIAL1.print(x,y))
+  #define SERIAL_PROTOCOLLN(x)        (MYSERIAL0.println(x), MYSERIAL1.println(x))
+  #define SERIAL_PRINTF(args...)      (MYSERIAL0.printf(args), MYSERIAL1.printf(args))
 
-  #define SERIAL_FLUSH_P(p)           (p == 0 ? MYSERIAL0.flush() : MYSERIAL1.flush())
-  #define SERIAL_FLUSH()              do { MYSERIAL0.flush(); MYSERIAL1.flush(); } while(0)
+  #define SERIAL_FLUSH_P(p)           (WITHIN(p, 0, NUM_SERIAL-1) ? (p == 0 ? MYSERIAL0.flush() : MYSERIAL1.flush()) : SERIAL_FLUSH())
+  #define SERIAL_FLUSH()              (MYSERIAL0.flush(), MYSERIAL1.flush())
   #if TX_BUFFER_SIZE > 0
-    #define SERIAL_FLUSHTX_P(p)       (p == 0 ? MYSERIAL0.flushTX() : MYSERIAL1.flushTX())
-    #define SERIAL_FLUSHTX()          do { MYSERIAL0.flushTX(); MYSERIAL1.flushTX(); } while(0)
+    #define SERIAL_FLUSHTX_P(p)       (WITHIN(p, 0, NUM_SERIAL-1) ? (p == 0 ? MYSERIAL0.flushTX() : MYSERIAL1.flushTX()) : SERIAL_FLUSHTX())
+    #define SERIAL_FLUSHTX()          (MYSERIAL0.flushTX(), MYSERIAL1.flushTX())
   #endif
 
   #define SERIAL_EOL_P(p) SERIAL_CHAR_P(p,'\n')
@@ -109,24 +109,24 @@ extern const char errormagic[] PROGMEM;
   #define SERIAL_ECHOPAIR_F_P(p,pre,value)          SERIAL_ECHOPAIR_P(p, pre, FIXFLOAT(value))
   #define SERIAL_ECHOLNPAIR_F_P(p,pre, value)       SERIAL_ECHOLNPAIR_P(p, pre, FIXFLOAT(value))
 
-  void serial_echopair_PGM_P(const uint8_t p, const char* s_P, const char *v);
-  void serial_echopair_PGM_P(const uint8_t p, const char* s_P, char v);
-  void serial_echopair_PGM_P(const uint8_t p, const char* s_P, int v);
-  void serial_echopair_PGM_P(const uint8_t p, const char* s_P, long v);
-  void serial_echopair_PGM_P(const uint8_t p, const char* s_P, float v);
-  void serial_echopair_PGM_P(const uint8_t p, const char* s_P, double v);
-  void serial_echopair_PGM_P(const uint8_t p, const char* s_P, unsigned int v);
-  void serial_echopair_PGM_P(const uint8_t p, const char* s_P, unsigned long v);
-  FORCE_INLINE void serial_echopair_PGM_P(const uint8_t p, const char* s_P, uint8_t v) { serial_echopair_PGM_P(p, s_P, (int)v); }
-  FORCE_INLINE void serial_echopair_PGM_P(const uint8_t p, const char* s_P, bool v) { serial_echopair_PGM_P(p, s_P, (int)v); }
-  FORCE_INLINE void serial_echopair_PGM_P(const uint8_t p, const char* s_P, void *v) { serial_echopair_PGM_P(p, s_P, (unsigned long)v); }
+  void serial_echopair_PGM_P(const int8_t p, const char* s_P, const char *v);
+  void serial_echopair_PGM_P(const int8_t p, const char* s_P, char v);
+  void serial_echopair_PGM_P(const int8_t p, const char* s_P, int v);
+  void serial_echopair_PGM_P(const int8_t p, const char* s_P, long v);
+  void serial_echopair_PGM_P(const int8_t p, const char* s_P, float v);
+  void serial_echopair_PGM_P(const int8_t p, const char* s_P, double v);
+  void serial_echopair_PGM_P(const int8_t p, const char* s_P, unsigned int v);
+  void serial_echopair_PGM_P(const int8_t p, const char* s_P, unsigned long v);
+  FORCE_INLINE void serial_echopair_PGM_P(const int8_t p, const char* s_P, uint8_t v) { serial_echopair_PGM_P(p, s_P, (int)v); }
+  FORCE_INLINE void serial_echopair_PGM_P(const int8_t p, const char* s_P, bool v) { serial_echopair_PGM_P(p, s_P, (int)v); }
+  FORCE_INLINE void serial_echopair_PGM_P(const int8_t p, const char* s_P, void *v) { serial_echopair_PGM_P(p, s_P, (unsigned long)v); }
 
-  void serial_spaces_P(const uint8_t p, uint8_t count);
+  void serial_spaces_P(const int8_t p, uint8_t count);
   #define SERIAL_ECHO_SP_P(p,C)     serial_spaces_P(p,C)
   #define SERIAL_ERROR_SP_P(p,C)    serial_spaces_P(p,C)
   #define SERIAL_PROTOCOL_SP_P(p,C) serial_spaces_P(p,C)
 
-  void serialprintPGM_P(const uint8_t p, const char* str);
+  void serialprintPGM_P(const int8_t p, const char* str);
 #else
   #define SERIAL_CHAR_P(p,x)          SERIAL_CHAR(x)
   #define SERIAL_PROTOCOL_P(p,x)      SERIAL_PROTOCOL(x)
