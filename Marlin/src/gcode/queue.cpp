@@ -97,12 +97,14 @@ void clear_command_queue() {
 /**
  * Once a new command is in the ring buffer, call this to commit it
  */
-inline void _commit_command(bool say_ok, int16_t port = -1) {
+inline void _commit_command(bool say_ok
+  #if NUM_SERIAL > 1
+    , int16_t port = -1
+  #endif
+) {
   send_ok[cmd_queue_index_w] = say_ok;
   #if NUM_SERIAL > 1
     command_queue_port[cmd_queue_index_w] = port;
-  #else
-    UNUSED(port);
   #endif
   if (++cmd_queue_index_w >= BUFSIZE) cmd_queue_index_w = 0;
   commands_in_queue++;
@@ -113,10 +115,18 @@ inline void _commit_command(bool say_ok, int16_t port = -1) {
  * Return true if the command was successfully added.
  * Return false for a full buffer, or if the 'command' is a comment.
  */
-inline bool _enqueuecommand(const char* cmd, bool say_ok, int16_t port = -1) {
+inline bool _enqueuecommand(const char* cmd, bool say_ok
+  #if NUM_SERIAL > 1
+    , int16_t port = -1
+  #endif
+) {
   if (*cmd == ';' || commands_in_queue >= BUFSIZE) return false;
   strcpy(command_queue[cmd_queue_index_w], cmd);
-  _commit_command(say_ok, port);
+  _commit_command(say_ok
+    #if NUM_SERIAL > 1
+      , port
+    #endif
+  );
   return true;
 }
 
@@ -347,7 +357,11 @@ inline void get_serial_commands() {
         #endif
 
         // Add the command to the queue
-        _enqueuecommand(serial_line_buffer[i], true, i);
+        _enqueuecommand(serial_line_buffer[i], true
+          #if NUM_SERIAL > 1
+            , i
+          #endif
+        );
       }
       else if (serial_count[i] >= MAX_CMD_SIZE - 1) {
         // Keep fetching, but ignore normal characters beyond the max length
