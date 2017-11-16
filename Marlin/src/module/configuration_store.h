@@ -29,11 +29,23 @@ class MarlinSettings {
   public:
     MarlinSettings() { }
 
-    static void reset();
-    static bool save();
+    static void reset(
+      #if ENABLED(EEPROM_CHITCHAT) && NUM_SERIAL > 1
+        const int8_t port = -1
+      #endif
+    );
+    static bool save(
+      #if ENABLED(EEPROM_CHITCHAT) && NUM_SERIAL > 1
+        const int8_t port = -1
+      #endif
+    );
 
     #if ENABLED(EEPROM_SETTINGS)
-      static bool load();
+      static bool load(
+        #if ENABLED(EEPROM_CHITCHAT) && NUM_SERIAL > 1
+          const int8_t port = -1
+        #endif
+      );
 
       #if ENABLED(AUTO_BED_LEVELING_UBL) // Eventually make these available if any leveling system
                                          // That can store is enabled
@@ -52,7 +64,11 @@ class MarlinSettings {
     #endif
 
     #if DISABLED(DISABLE_M503)
-      static void report(bool forReplay=false);
+      static void report(bool forReplay=false
+        #if NUM_SERIAL > 1
+          , const int8_t port = -1
+        #endif
+      );
     #else
       FORCE_INLINE
       static void report(bool forReplay=false) { UNUSED(forReplay); }

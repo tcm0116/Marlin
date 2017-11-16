@@ -46,13 +46,27 @@
 
   uint8_t ubl_cnt = 0;
 
-  void unified_bed_leveling::echo_name() { SERIAL_PROTOCOLPGM("Unified Bed Leveling"); }
+  void unified_bed_leveling::echo_name(
+    #if NUM_SERIAL > 1
+      const int8_t port/*= -1*/
+    #endif
+  ) {
+    SERIAL_PROTOCOLPGM_P(port, "Unified Bed Leveling");
+  }
 
-  void unified_bed_leveling::report_state() {
-    echo_name();
-    SERIAL_PROTOCOLPGM(" System v" UBL_VERSION " ");
-    if (!planner.leveling_active) SERIAL_PROTOCOLPGM("in");
-    SERIAL_PROTOCOLLNPGM("active.");
+  void unified_bed_leveling::report_state(
+    #if NUM_SERIAL > 1
+      const int8_t port/*= -1*/
+    #endif
+  ) {
+    echo_name(
+      #if NUM_SERIAL > 1
+        port
+      #endif
+    );
+    SERIAL_PROTOCOLPGM_P(port, " System v" UBL_VERSION " ");
+    if (!planner.leveling_active) SERIAL_PROTOCOLPGM_P(port, "in");
+    SERIAL_PROTOCOLLNPGM_P(port, "active.");
     safe_delay(50);
   }
 
