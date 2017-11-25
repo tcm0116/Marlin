@@ -108,6 +108,7 @@ int16_t Planner::flow_percentage[EXTRUDERS] = ARRAY_BY_EXTRUDERS1(100); // Extru
 // Initialized by settings.load()
 float Planner::e_factor[EXTRUDERS],              // The flow percentage and volumetric multiplier combine to scale E movement
       Planner::filament_size[EXTRUDERS],         // As a baseline for the multiplier, filament diameter
+      Planner::volumetric_area_nominal = CIRCLE_AREA((DEFAULT_NOMINAL_FILAMENT_DIA) * 0.5), // Nominal cross-sectional area
       Planner::volumetric_multiplier[EXTRUDERS]; // May be auto-adjusted by a filament width sensor
 
 uint32_t Planner::max_acceleration_steps_per_s2[XYZE_N],
@@ -420,24 +421,77 @@ void Planner::check_axes_activity() {
   unsigned char axis_active[NUM_AXIS] = { 0 },
                 tail_fan_speed[FAN_COUNT];
 
-  #if FAN_COUNT > 0
-    for (uint8_t i = 0; i < FAN_COUNT; i++) tail_fan_speed[i] = fanSpeeds[i];
-  #endif
-
   #if ENABLED(BARICUDA)
     #if HAS_HEATER_1
-      uint8_t tail_valve_pressure = baricuda_valve_pressure;
+      uint8_t tail_valve_pressure;
     #endif
     #if HAS_HEATER_2
-      uint8_t tail_e_to_p_pressure = baricuda_e_to_p_pressure;
+      uint8_t tail_e_to_p_pressure;
     #endif
   #endif
 
   if (blocks_queued()) {
 
     #if FAN_COUNT > 0
-      for (uint8_t i = 0; i < FAN_COUNT; i++) tail_fan_speed[i] = block_buffer[block_buffer_tail].fan_speed[i];
-    #endif
+
+      for (uint8_t i = 0; i < FAN_COUNT; i++)
+        tail_fan_speed[i] = block_buffer[block_buffer_tail].fan_speed[i];
+
+      #ifdef FAN_KICKSTART_TIME
+
+        static millis_t fan_kick_end[FAN_COUNT] = { 0 };
+
+        #define KICKSTART_FAN(f) \
+          if (tail_fan_speed[f]) { \
+            millis_t ms = millis(); \
+            if (fan_kick_end[f] == 0) { \
+              fan_kick_end[f] = ms + FAN_KICKSTART_TIME; \
+              tail_fan_speed[f] = 255; \
+            } else if (PENDING(ms, fan_kick_end[f])) \
+              tail_fan_speed[f] = 255; \
+          } else fan_kick_end[f] = 0
+
+        #if HAS_FAN0
+          KICKSTART_FAN(0);
+        #endif
+        #if HAS_FAN1
+          KICKSTART_FAN(1);
+        #endif
+        #if HAS_FAN2
+          KICKSTART_FAN(2);
+        #endif
+
+      #endif // FAN_KICKSTART_TIME
+
+      #ifdef FAN_MIN_PWM
+        #define CALC_FAN_SPEED(f) (tail_fan_speed[f] ? ( FAN_MIN_PWM + (tail_fan_speed[f] * (255 - FAN_MIN_PWM)) / 255 ) : 0)
+      #else
+        #define CALC_FAN_SPEED(f) tail_fan_speed[f]
+      #endif
+
+      #if ENABLED(FAN_SOFT_PWM)
+        #if HAS_FAN0
+          thermalManager.soft_pwm_amount_fan[0] = CALC_FAN_SPEED(0);
+        #endif
+        #if HAS_FAN1
+          thermalManager.soft_pwm_amount_fan[1] = CALC_FAN_SPEED(1);
+        #endif
+        #if HAS_FAN2
+          thermalManager.soft_pwm_amount_fan[2] = CALC_FAN_SPEED(2);
+        #endif
+      #else
+        #if HAS_FAN0
+          analogWrite(FAN_PIN, CALC_FAN_SPEED(0));
+        #endif
+        #if HAS_FAN1
+          analogWrite(FAN1_PIN, CALC_FAN_SPEED(1));
+        #endif
+        #if HAS_FAN2
+          analogWrite(FAN2_PIN, CALC_FAN_SPEED(2));
+        #endif
+      #endif
+
+    #endif // FAN_COUNT > 0
 
     block_t* block;
 
@@ -456,6 +510,21 @@ void Planner::check_axes_activity() {
       LOOP_XYZE(i) if (block->steps[i]) axis_active[i]++;
     }
   }
+  else {
+    #if FAN_COUNT > 0
+      for (uint8_t i = 0; i < FAN_COUNT; i++) tail_fan_speed[i] = fanSpeeds[i];
+    #endif
+
+    #if ENABLED(BARICUDA)
+      #if HAS_HEATER_1
+        tail_valve_pressure = baricuda_valve_pressure;
+      #endif
+      #if HAS_HEATER_2
+        tail_e_to_p_pressure = baricuda_e_to_p_pressure;
+      #endif
+    #endif
+  }
+
   #if ENABLED(DISABLE_X)
     if (!axis_active[X_AXIS]) disable_X();
   #endif
@@ -468,64 +537,6 @@ void Planner::check_axes_activity() {
   #if ENABLED(DISABLE_E)
     if (!axis_active[E_AXIS]) disable_e_steppers();
   #endif
-
-  #if FAN_COUNT > 0
-
-    #ifdef FAN_MIN_PWM
-      #define CALC_FAN_SPEED(f) (tail_fan_speed[f] ? ( FAN_MIN_PWM + (tail_fan_speed[f] * (255 - FAN_MIN_PWM)) / 255 ) : 0)
-    #else
-      #define CALC_FAN_SPEED(f) tail_fan_speed[f]
-    #endif
-
-    #ifdef FAN_KICKSTART_TIME
-
-      static millis_t fan_kick_end[FAN_COUNT] = { 0 };
-
-      #define KICKSTART_FAN(f) \
-        if (tail_fan_speed[f]) { \
-          millis_t ms = millis(); \
-          if (fan_kick_end[f] == 0) { \
-            fan_kick_end[f] = ms + FAN_KICKSTART_TIME; \
-            tail_fan_speed[f] = 255; \
-          } else if (PENDING(ms, fan_kick_end[f])) \
-            tail_fan_speed[f] = 255; \
-        } else fan_kick_end[f] = 0
-
-      #if HAS_FAN0
-        KICKSTART_FAN(0);
-      #endif
-      #if HAS_FAN1
-        KICKSTART_FAN(1);
-      #endif
-      #if HAS_FAN2
-        KICKSTART_FAN(2);
-      #endif
-
-    #endif // FAN_KICKSTART_TIME
-
-    #if ENABLED(FAN_SOFT_PWM)
-      #if HAS_FAN0
-        thermalManager.soft_pwm_amount_fan[0] = CALC_FAN_SPEED(0);
-      #endif
-      #if HAS_FAN1
-        thermalManager.soft_pwm_amount_fan[1] = CALC_FAN_SPEED(1);
-      #endif
-      #if HAS_FAN2
-        thermalManager.soft_pwm_amount_fan[2] = CALC_FAN_SPEED(2);
-      #endif
-    #else
-      #if HAS_FAN0
-        analogWrite(FAN_PIN, CALC_FAN_SPEED(0));
-      #endif
-      #if HAS_FAN1
-        analogWrite(FAN1_PIN, CALC_FAN_SPEED(1));
-      #endif
-      #if HAS_FAN2
-        analogWrite(FAN2_PIN, CALC_FAN_SPEED(2));
-      #endif
-    #endif
-
-  #endif // FAN_COUNT > 0
 
   #if ENABLED(AUTOTEMP)
     getHighESpeed();
@@ -542,8 +553,7 @@ void Planner::check_axes_activity() {
 }
 
 inline float calculate_volumetric_multiplier(const float &diameter) {
-  if (!parser.volumetric_enabled || diameter == 0) return 1.0;
-  return 1.0 / CIRCLE_AREA(diameter * 0.5);
+  return (parser.volumetric_enabled && diameter) ? 1.0 / CIRCLE_AREA(diameter * 0.5) : 1.0;
 }
 
 void Planner::calculate_volumetric_multipliers() {

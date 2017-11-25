@@ -29,6 +29,12 @@
 
   #include "../Marlin.h"
 
+  #if ENABLED(AUTO_BED_LEVELING_UBL) || ENABLED(G26_MESH_VALIDATION)
+    extern bool lcd_external_control;
+  #else
+    constexpr bool lcd_external_control = false;
+  #endif
+
   #define BUTTON_EXISTS(BN) (defined(BTN_## BN) && BTN_## BN >= 0)
   #define BUTTON_PRESSED(BN) !READ(BTN_## BN)
 
@@ -108,7 +114,23 @@
     void lcd_completion_feedback(const bool good=true);
 
     #if ENABLED(ADVANCED_PAUSE_FEATURE)
+      enum AdvancedPauseMessage {
+        ADVANCED_PAUSE_MESSAGE_INIT,
+        ADVANCED_PAUSE_MESSAGE_UNLOAD,
+        ADVANCED_PAUSE_MESSAGE_INSERT,
+        ADVANCED_PAUSE_MESSAGE_LOAD,
+        ADVANCED_PAUSE_MESSAGE_EXTRUDE,
+        ADVANCED_PAUSE_MESSAGE_OPTION,
+        ADVANCED_PAUSE_MESSAGE_RESUME,
+        ADVANCED_PAUSE_MESSAGE_STATUS,
+        ADVANCED_PAUSE_MESSAGE_CLICK_TO_HEAT_NOZZLE,
+        ADVANCED_PAUSE_MESSAGE_WAIT_FOR_NOZZLES_TO_HEAT
+      };
       void lcd_advanced_pause_show_message(const AdvancedPauseMessage message);
+    #endif
+
+    #if ENABLED(G26_MESH_VALIDATION)
+      void lcd_chirp();
     #endif
 
     #if ENABLED(AUTO_BED_LEVELING_UBL)
@@ -194,6 +216,10 @@
     #define LCD_CLICKED (buttons & EN_C)
   #else
     #define LCD_CLICKED false
+  #endif
+
+  #if ENABLED(AUTO_BED_LEVELING_UBL) || ENABLED(G26_MESH_VALIDATION)
+    bool is_lcd_clicked();
   #endif
 
 #else // no LCD
