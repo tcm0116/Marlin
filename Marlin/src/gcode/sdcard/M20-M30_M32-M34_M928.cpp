@@ -34,6 +34,10 @@
   #include "../queue.h"
 #endif
 
+#if NUM_SERIAL > 1
+  #include "../../gcode/queue.h"
+#endif
+
 /**
  * M20: List SD card to serial output
  */
