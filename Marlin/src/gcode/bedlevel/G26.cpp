@@ -53,6 +53,9 @@
   #error "SIZE_OF_CROSSHAIRS must be less than SIZE_OF_INTERSECTION_CIRCLES."
 #endif
 
+#define G26_OK false
+#define G26_ERR true
+
 /**
  *   G26 Mesh Validation Tool
  *
@@ -156,31 +159,21 @@ int8_t g26_prime_flag;
 #if ENABLED(NEWPANEL)
 
   /**
-   * Detect is_lcd_clicked, debounce it, and return true for cancel
+   * If the LCD is clicked, cancel, wait for release, return true
    */
   bool user_canceled() {
-    if (!is_lcd_clicked()) return false;
-    safe_delay(10);                       // Wait for click to settle
-
-    #if ENABLED(ULTRA_LCD)
-      lcd_setstatusPGM(PSTR("Mesh Validation Stopped."), 99);
+    if (!is_lcd_clicked()) return false; // Return if the button isn't pressed
+    lcd_setstatusPGM(PSTR("Mesh Validation Stopped."), 99);
+    #if ENABLED(ULTIPANEL)
       lcd_quick_feedback();
     #endif
-
-    while (!is_lcd_clicked()) idle();    // Wait for button release
-
-    // If the button is suddenly pressed again,
-    // ask the user to resolve the issue
-    lcd_setstatusPGM(PSTR("Release button"), 99); // will never appear...
-    while (is_lcd_clicked()) idle();             // unless this loop happens
-    lcd_reset_status();
-
+    wait_for_release();
     return true;
   }
 
   bool exit_from_g26() {
     lcd_setstatusPGM(PSTR("Leaving G26"), -1);
-    while (is_lcd_clicked()) idle();
+    wait_for_release();
     return G26_ERR;
   }
 
@@ -194,7 +187,7 @@ mesh_index_pair find_closest_circle_to_print(const float &X, const float &Y) {
 
   for (uint8_t i = 0; i < GRID_MAX_POINTS_X; i++) {
     for (uint8_t j = 0; j < GRID_MAX_POINTS_Y; j++) {
-      if (!is_bit_set(circle_flags, i, j)) {
+      if (!is_bitmap_set(circle_flags, i, j)) {
         const float mx = _GET_MESH_X(i),  // We found a circle that needs to be printed
                     my = _GET_MESH_Y(j);
 
@@ -220,14 +213,14 @@ mesh_index_pair find_closest_circle_to_print(const float &X, const float &Y) {
       }
     }
   }
-  bit_set(circle_flags, return_val.x_index, return_val.y_index);   // Mark this location as done.
+  bitmap_set(circle_flags, return_val.x_index, return_val.y_index);   // Mark this location as done.
   return return_val;
 }
 
 void G26_line_to_destination(const float &feed_rate) {
   const float save_feedrate = feedrate_mm_s;
   feedrate_mm_s = feed_rate;      // use specified feed rate
-  prepare_move_to_destination();  // will ultimately call ubl.line_to_destination_cartesian or ubl.prepare_linear_move_to for UBL_DELTA
+  prepare_move_to_destination();  // will ultimately call ubl.line_to_destination_cartesian or ubl.prepare_linear_move_to for UBL_SEGMENTED
   feedrate_mm_s = save_feedrate;  // restore global feed rate
 }
 
@@ -268,18 +261,16 @@ void move_to(const float &rx, const float &ry, const float &z, const float &e_de
   set_destination_from_current();
 }
 
-FORCE_INLINE void move_to(const float where[XYZE], const float &de) {
-  move_to(where[X_AXIS], where[Y_AXIS], where[Z_AXIS], de);
-}
+FORCE_INLINE void move_to(const float (&where)[XYZE], const float &de) { move_to(where[X_AXIS], where[Y_AXIS], where[Z_AXIS], de); }
 
-void retract_filament(const float where[XYZE]) {
+void retract_filament(const float (&where)[XYZE]) {
   if (!g26_retracted) { // Only retract if we are not already retracted!
     g26_retracted = true;
     move_to(where, -1.0 * g26_retraction_multiplier);
   }
 }
 
-void recover_filament(const float where[XYZE]) {
+void recover_filament(const float (&where)[XYZE]) {
   if (g26_retracted) { // Only un-retract if we are retracted.
     move_to(where, 1.2 * g26_retraction_multiplier);
     g26_retracted = false;
@@ -314,9 +305,8 @@ void print_line_from_here_to_there(const float &sx, const float &sy, const float
 
   // If the end point of the line is closer to the nozzle, flip the direction,
   // moving from the end to the start. On very small lines the optimization isn't worth it.
-  if (dist_end < dist_start && (SIZE_OF_INTERSECTION_CIRCLES) < FABS(line_length)) {
+  if (dist_end < dist_start && (SIZE_OF_INTERSECTION_CIRCLES) < FABS(line_length))
     return print_line_from_here_to_there(ex, ey, ez, sx, sy, sz);
-  }
 
   // Decide whether to retract & bump
 
@@ -348,8 +338,8 @@ inline bool look_for_lines_to_connect() {
       if (i < GRID_MAX_POINTS_X) { // We can't connect to anything to the right than GRID_MAX_POINTS_X.
                                    // This is already a half circle because we are at the edge of the bed.
 
-        if (is_bit_set(circle_flags, i, j) && is_bit_set(circle_flags, i + 1, j)) { // check if we can do a line to the left
-          if (!is_bit_set(horizontal_mesh_line_flags, i, j)) {
+        if (is_bitmap_set(circle_flags, i, j) && is_bitmap_set(circle_flags, i + 1, j)) { // check if we can do a line to the left
+          if (!is_bitmap_set(horizontal_mesh_line_flags, i, j)) {
 
             //
             // We found two circles that need a horizontal line to connect them
@@ -373,18 +363,17 @@ inline bool look_for_lines_to_connect() {
                 SERIAL_EOL();
                 //debug_current_and_destination(PSTR("Connecting horizontal line."));
               }
-
               print_line_from_here_to_there(sx, sy, g26_layer_height, ex, ey, g26_layer_height);
             }
-            bit_set(horizontal_mesh_line_flags, i, j);   // Mark it as done so we don't do it again, even if we skipped it
+            bitmap_set(horizontal_mesh_line_flags, i, j);   // Mark it as done so we don't do it again, even if we skipped it
           }
         }
 
         if (j < GRID_MAX_POINTS_Y) { // We can't connect to anything further back than GRID_MAX_POINTS_Y.
                                          // This is already a half circle because we are at the edge  of the bed.
 
-          if (is_bit_set(circle_flags, i, j) && is_bit_set(circle_flags, i, j + 1)) { // check if we can do a line straight down
-            if (!is_bit_set( vertical_mesh_line_flags, i, j)) {
+          if (is_bitmap_set(circle_flags, i, j) && is_bitmap_set(circle_flags, i, j + 1)) { // check if we can do a line straight down
+            if (!is_bitmap_set( vertical_mesh_line_flags, i, j)) {
               //
               // We found two circles that need a vertical line to connect them
               // Print it!
@@ -405,14 +394,14 @@ inline bool look_for_lines_to_connect() {
                   SERIAL_ECHOPAIR(", ey=", ey);
                   SERIAL_CHAR(')');
                   SERIAL_EOL();
+
                   #if ENABLED(AUTO_BED_LEVELING_UBL)
-                    void debug_current_and_destination(const char *title);
                     debug_current_and_destination(PSTR("Connecting vertical line."));
                   #endif
                 }
                 print_line_from_here_to_there(sx, sy, g26_layer_height, ex, ey, g26_layer_height);
               }
-              bit_set(vertical_mesh_line_flags, i, j);   // Mark it as done so we don't do it again, even if skipped
+              bitmap_set(vertical_mesh_line_flags, i, j);   // Mark it as done so we don't do it again, even if skipped
             }
           }
         }
@@ -483,7 +472,7 @@ inline bool turn_on_heaters() {
 /**
  * Prime the nozzle if needed. Return true on error.
  */
-bool prime_nozzle() {
+inline bool prime_nozzle() {
 
   #if ENABLED(NEWPANEL)
     float Total_Prime = 0.0;
@@ -515,7 +504,7 @@ bool prime_nozzle() {
         idle();
       }
 
-      while (is_lcd_clicked()) idle();           // Debounce Encoder Wheel
+      wait_for_release();
 
       strcpy_P(lcd_status_message, PSTR("Done Priming")); // We can't do lcd_setstatusPGM() without having it continue;
                                                           // So... We cheat to get a message up.
@@ -582,7 +571,7 @@ void GcodeSuite::G26() {
     g26_bed_temp = parser.value_celsius();
     if (!WITHIN(g26_bed_temp, 15, 140)) {
       SERIAL_PROTOCOLLNPGM("?Specified bed temperature not plausible.");
-      return G26_ERR;
+      return;
     }
   }
 
@@ -590,7 +579,7 @@ void GcodeSuite::G26() {
     g26_layer_height = parser.value_linear_units();
     if (!WITHIN(g26_layer_height, 0.0, 2.0)) {
       SERIAL_PROTOCOLLNPGM("?Specified layer height not plausible.");
-      return G26_ERR;
+      return;
     }
   }
 
@@ -599,12 +588,12 @@ void GcodeSuite::G26() {
       g26_retraction_multiplier = parser.value_float();
       if (!WITHIN(g26_retraction_multiplier, 0.05, 15.0)) {
         SERIAL_PROTOCOLLNPGM("?Specified Retraction Multiplier not plausible.");
-        return G26_ERR;
+        return;
       }
     }
     else {
       SERIAL_PROTOCOLLNPGM("?Retraction Multiplier must be specified.");
-      return G26_ERR;
+      return;
     }
   }
 
@@ -612,7 +601,7 @@ void GcodeSuite::G26() {
     g26_nozzle = parser.value_float();
     if (!WITHIN(g26_nozzle, 0.1, 1.0)) {
       SERIAL_PROTOCOLLNPGM("?Specified nozzle size not plausible.");
-      return G26_ERR;
+      return;
     }
   }
 
@@ -622,7 +611,7 @@ void GcodeSuite::G26() {
         g26_prime_flag = -1;
       #else
         SERIAL_PROTOCOLLNPGM("?Prime length must be specified when not using an LCD.");
-        return G26_ERR;
+        return;
       #endif
     }
     else {
@@ -630,7 +619,7 @@ void GcodeSuite::G26() {
       g26_prime_length = parser.value_linear_units();
       if (!WITHIN(g26_prime_length, 0.0, 25.0)) {
         SERIAL_PROTOCOLLNPGM("?Specified prime length not plausible.");
-        return G26_ERR;
+        return;
       }
     }
   }
@@ -639,7 +628,7 @@ void GcodeSuite::G26() {
     g26_filament_diameter = parser.value_linear_units();
     if (!WITHIN(g26_filament_diameter, 1.0, 4.0)) {
       SERIAL_PROTOCOLLNPGM("?Specified filament size not plausible.");
-      return G26_ERR;
+      return;
     }
   }
   g26_extrusion_multiplier *= sq(1.75) / sq(g26_filament_diameter); // If we aren't using 1.75mm filament, we need to
@@ -652,7 +641,7 @@ void GcodeSuite::G26() {
     g26_hotend_temp = parser.value_celsius();
     if (!WITHIN(g26_hotend_temp, 165, 280)) {
       SERIAL_PROTOCOLLNPGM("?Specified nozzle temperature not plausible.");
-      return G26_ERR;
+      return;
     }
   }
 
@@ -668,22 +657,21 @@ void GcodeSuite::G26() {
   #else
     if (!parser.seen('R')) {
       SERIAL_PROTOCOLLNPGM("?(R)epeat must be specified when not using an LCD.");
-      return G26_ERR;
+      return;
     }
     else
       g26_repeats = parser.has_value() ? parser.value_int() : GRID_MAX_POINTS + 1;
   #endif
   if (g26_repeats < 1) {
     SERIAL_PROTOCOLLNPGM("?(R)epeat value not plausible; must be at least 1.");
-    return G26_ERR;
+    return;
   }
 
-  g26_x_pos = parser.seenval('X') ? RAW_X_POSITION(parser.value_linear_units()) : current_position[X_AXIS],
+  g26_x_pos = parser.seenval('X') ? RAW_X_POSITION(parser.value_linear_units()) : current_position[X_AXIS];
   g26_y_pos = parser.seenval('Y') ? RAW_Y_POSITION(parser.value_linear_units()) : current_position[Y_AXIS];
-
   if (!position_is_reachable(g26_x_pos, g26_y_pos)) {
     SERIAL_PROTOCOLLNPGM("?Specified X,Y coordinate out of bounds.");
-    return G26_ERR;
+    return;
   }
 
   /**
@@ -727,6 +715,7 @@ void GcodeSuite::G26() {
   #if ENABLED(ULTRA_LCD)
     lcd_external_control = true;
   #endif
+
   //debug_current_and_destination(PSTR("Starting G26 Mesh Validation Pattern."));
 
   /**
@@ -806,7 +795,7 @@ void GcodeSuite::G26() {
         #if IS_KINEMATIC
           // Check to make sure this segment is entirely on the bed, skip if not.
           if (!position_is_reachable(rx, ry) || !position_is_reachable(xe, ye)) continue;
-        #else                                              // not, we need to skip
+        #else                                               // not, we need to skip
           rx = constrain(rx, X_MIN_POS + 1, X_MAX_POS - 1); // This keeps us from bumping the endstops
           ry = constrain(ry, Y_MIN_POS + 1, Y_MAX_POS - 1);
           xe = constrain(xe, X_MIN_POS + 1, X_MAX_POS - 1);
@@ -842,15 +831,15 @@ void GcodeSuite::G26() {
   move_to(destination, 0); // Raise the nozzle
   //debug_current_and_destination(PSTR("done doing Z-Raise."));
 
-  destination[X_AXIS] = g26_x_pos;                                               // Move back to the starting position
+  destination[X_AXIS] = g26_x_pos;                               // Move back to the starting position
   destination[Y_AXIS] = g26_y_pos;
-  //destination[Z_AXIS] = Z_CLEARANCE_BETWEEN_PROBES;                        // Keep the nozzle where it is
+  //destination[Z_AXIS] = Z_CLEARANCE_BETWEEN_PROBES;            // Keep the nozzle where it is
 
   move_to(destination, 0); // Move back to the starting position
   //debug_current_and_destination(PSTR("done doing X/Y move."));
 
   #if ENABLED(ULTRA_LCD)
-    lcd_external_control = false;   // Give back control of the LCD Panel!
+    lcd_external_control = false;     // Give back control of the LCD Panel!
   #endif
 
   if (!g26_keep_heaters_on) {

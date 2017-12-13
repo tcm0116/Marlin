@@ -64,7 +64,7 @@
 #endif
 
 #if TX_BUFFER_SIZE && (TX_BUFFER_SIZE < 2 || TX_BUFFER_SIZE > 256 || !IS_POWER_OF_2(TX_BUFFER_SIZE))
-  #error "TX_BUFFER_SIZE must be 0 or a power of 2 greater than 1."
+  #error "TX_BUFFER_SIZE must be 0, a power of 2 greater than 1, and no greater than 256."
 #endif
 
 #if RX_BUFFER_SIZE > 256
@@ -107,10 +107,10 @@ public:
     FORCE_INLINE static ring_buffer_pos_t rxMaxEnqueued() { return rx_max_enqueued; }
   #endif
 
-  static FORCE_INLINE void write(const char* str) { while (*str) write(*str++); }
-  static FORCE_INLINE void write(const uint8_t* buffer, size_t size) { while (size--) write(*buffer++); }
-  static FORCE_INLINE void print(const String& s) { for (int i = 0; i < (int)s.length(); i++) write(s[i]); }
-  static FORCE_INLINE void print(const char* str) { write(str); }
+  FORCE_INLINE static void write(const char* str) { while (*str) write(*str++); }
+  FORCE_INLINE static void write(const uint8_t* buffer, size_t size) { while (size--) write(*buffer++); }
+  FORCE_INLINE static void print(const String& s) { for (int i = 0; i < (int)s.length(); i++) write(s[i]); }
+  FORCE_INLINE static void print(const char* str) { write(str); }
 
   static void print(char, int = BYTE);
   static void print(unsigned char, int = BYTE);

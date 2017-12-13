@@ -67,7 +67,7 @@ void GcodeSuite::M502() {
    * M503: print settings currently in memory
    */
   void GcodeSuite::M503() {
-    (void)settings.report(parser.boolval('S')
+    (void)settings.report(parser.seen('S') && !parser.value_bool()
       #if NUM_SERIAL > 1
         , command_queue_port[cmd_queue_index_r]
       #endif

@@ -36,9 +36,10 @@
 
 #if ENABLED(PROBE_MANUALLY)
   bool g29_in_progress = false;
-  #if ENABLED(LCD_BED_LEVELING)
-    #include "../../lcd/ultralcd.h"
-  #endif
+#endif
+
+#if ENABLED(LCD_BED_LEVELING)
+  #include "../../lcd/ultralcd.h"
 #endif
 
 #if ENABLED(G26_MESH_VALIDATION)
@@ -127,13 +128,17 @@ void set_bed_leveling_enabled(const bool enable/*=true*/) {
         // so compensation will give the right stepper counts.
         planner.unapply_leveling(current_position);
 
+      SYNC_PLAN_POSITION_KINEMATIC();
+
     #endif // OLDSCHOOL_ABL
   }
 }
 
 #if ENABLED(ENABLE_LEVELING_FADE_HEIGHT)
 
-  void set_z_fade_height(const float zfh) {
+  void set_z_fade_height(const float zfh, const bool do_report/*=true*/) {
+
+    if (planner.z_fade_height == zfh) return; // do nothing if no change
 
     const bool level_active = planner.leveling_active;
 
@@ -144,6 +149,7 @@ void set_bed_leveling_enabled(const bool enable/*=true*/) {
     planner.set_z_fade_height(zfh);
 
     if (level_active) {
+      const float oldpos[] = { current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS] };
       #if ENABLED(AUTO_BED_LEVELING_UBL)
         set_bed_leveling_enabled(true);  // turn back on after changing fade height
       #else
@@ -154,7 +160,10 @@ void set_bed_leveling_enabled(const bool enable/*=true*/) {
             Z_AXIS
           #endif
         );
+        SYNC_PLAN_POSITION_KINEMATIC();
       #endif
+      if (do_report && memcmp(oldpos, current_position, sizeof(oldpos)))
+        report_current_position();
     }
   }
 
@@ -273,7 +282,7 @@ void reset_bed_level() {
     current_position[X_AXIS] = rx;
     current_position[Y_AXIS] = ry;
 
-    #if ENABLED(PROBE_MANUALLY) && ENABLED(LCD_BED_LEVELING)
+    #if ENABLED(LCD_BED_LEVELING)
       lcd_wait_for_move = false;
     #endif
   }

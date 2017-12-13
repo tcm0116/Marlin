@@ -48,11 +48,9 @@
 
 #if SERIAL_PORT == -1
   #define MYSERIAL0 SerialUSB
-#else
+#elif SERIAL_PORT >= 0 && SERIAL_PORT <= 4
   #define MYSERIAL0 customizedSerial
 #endif
-
-#define _BV(bit) (1 << (bit))
 
 // We need the previous define before the include, or compilation bombs...
 #include "MarlinSerial_Due.h"
