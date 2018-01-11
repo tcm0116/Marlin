@@ -380,10 +380,16 @@ static_assert(X_MAX_LENGTH >= X_BED_SIZE && Y_MAX_LENGTH >= Y_BED_SIZE,
     #error "BABYSTEPPING is not implemented for SCARA yet."
   #elif ENABLED(DELTA) && ENABLED(BABYSTEP_XY)
     #error "BABYSTEPPING only implemented for Z axis on deltabots."
-  #elif ENABLED(BABYSTEP_ZPROBE_OFFSET) && ENABLED(MESH_BED_LEVELING)
-    #error "MESH_BED_LEVELING and BABYSTEP_ZPROBE_OFFSET is not a valid combination"
-  #elif ENABLED(BABYSTEP_ZPROBE_OFFSET) && !HAS_BED_PROBE
-    #error "BABYSTEP_ZPROBE_OFFSET requires a probe."
+  #elif ENABLED(BABYSTEP_ZPROBE_OFFSET)
+    #if ENABLED(MESH_BED_LEVELING)
+      #error "MESH_BED_LEVELING and BABYSTEP_ZPROBE_OFFSET is not a valid combination."
+    #elif !HAS_BED_PROBE
+      #error "BABYSTEP_ZPROBE_OFFSET requires a probe."
+    #elif ENABLED(DELTA) && DISABLED(LINK_Z_OFFSET_DELTA_HEIGHT)
+      #error "BABYSTEP_ZPROBE_OFFSET is only compatible with deltabots if LINK_Z_OFFSET_DELTA_HEIGHT is enabled."
+    #elif !HOMING_Z_WITH_PROBE && DISABLED(DELTA)
+      #error "BABYSTEP_ZPROBE_OFFSET is only compatible with machines that use the probe for homing."
+    #endif
   #elif ENABLED(BABYSTEP_ZPROBE_GFX_OVERLAY) && !ENABLED(DOGLCD)
     #error "BABYSTEP_ZPROBE_GFX_OVERLAY requires a DOGLCD."
   #elif ENABLED(BABYSTEP_ZPROBE_GFX_OVERLAY) && !ENABLED(BABYSTEP_ZPROBE_OFFSET)

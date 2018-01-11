@@ -504,6 +504,9 @@
     // set the default number of probe points : n*n (1 -> 7)
     #define DELTA_CALIBRATION_DEFAULT_POINTS 4
 
+    // Causes changes to the Z Offset (M851) to update the Delta Height
+    //#define LINK_Z_OFFSET_DELTA_HEIGHT
+
     // Enable and set these values based on results of 'G33 A'
     //#define H_FACTOR 1.01
     //#define R_FACTOR 2.61

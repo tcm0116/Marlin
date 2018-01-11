@@ -37,6 +37,9 @@
 #if ENABLED(BABYSTEP_ZPROBE_OFFSET)
   FORCE_INLINE void mod_zprobe_zoffset(const float &offs) {
     zprobe_zoffset += offs;
+    #if ENABLED(DELTA) && ENABLED(LINK_Z_OFFSET_DELTA_HEIGHT)
+      delta_height -= offs;
+    #endif
     SERIAL_ECHO_START();
     SERIAL_ECHOLNPAIR(MSG_PROBE_Z_OFFSET ": ", zprobe_zoffset);
   }

@@ -37,6 +37,9 @@ void GcodeSuite::M851() {
       SERIAL_ECHOLNPGM(" " MSG_Z_MIN " " STRINGIFY(Z_PROBE_OFFSET_RANGE_MIN) " " MSG_Z_MAX " " STRINGIFY(Z_PROBE_OFFSET_RANGE_MAX));
       return;
     }
+    #if ENABLED(DELTA) && ENABLED(LINK_Z_OFFSET_DELTA_HEIGHT)
+      delta_height -= value - zprobe_zoffset;
+    #endif
     zprobe_zoffset = value;
   }
   SERIAL_ECHOLNPAIR(": ", zprobe_zoffset);
