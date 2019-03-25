@@ -870,6 +870,11 @@ void GcodeSuite::G26() {
     planner.calculate_volumetric_multipliers();
   #endif
 
+  #if DISABLED(NO_VOLUMETRICS)
+    parser.volumetric_enabled = volumetric_was_enabled;
+    planner.calculate_volumetric_multipliers();
+  #endif
+
   #if HAS_LCD_MENU
     ui.release();                                             // Give back control of the LCD
   #endif
